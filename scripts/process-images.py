@@ -16,16 +16,15 @@ Usage:
 Authors: aotian.zheng@noaa.gov (script development) and matt.grossi@noaa.gov
          (implementation, user functionality, documentation) with assistance
          from Google Gemini Coding Partner
-Version: 2026.1.0
+Version: 2026.1.2
 Release Date: July 2025
-Last Updated: July 2026
+Last Updated: September 2026
 """
 
 import argparse
 import difflib
 import os
 from pathlib import Path
-import warnings
 import yaml
 
 import cv2 as cv
@@ -75,12 +74,28 @@ def clean_and_validate_config(config: dict):
     REQUIRED_KEYS = {
         'processed_image_path', 'raw_image_path', 'input_type'
         }
-    VALID_KEYS = REQUIRED_KEYS | {
-        'binary_threshold', 'bottom_pad', 'collection_date_colname',
-        'downsample', 'fish_id_colname', 'fish_length_colname',
-        'fish_weight_colname', 'invert', 'metadata_csv_file', 'model_pth_file',
-        'normalization', 'output_csv_file', 'output_type', 'pad',
-        'points_per_side', 'sam_weights_path', 'sam_model_type', 'segment',
+    VALID_KEYS = {
+        'binary_threshold',
+        'bottom_pad',
+        'collection_date_colname',
+        'downsample',
+        'fish_id_colname',
+        'fish_length_colname',
+        'fish_weight_colname',
+        'input_type',
+        'invert',
+        'metadata_csv_file',
+        'model_pth_file',
+        'normalization',
+        'output_csv_file',
+        'output_type',
+        'pad',
+        'points_per_side',
+        'processed_image_path',
+        'raw_image_path',
+        'sam_model_type',
+        'sam_weights_path',
+        'segment',
         'stability_score_thresh'
         }
     
@@ -121,24 +136,16 @@ def clean_and_validate_config(config: dict):
             _, ext = os.path.splitext(v)
             v = v.replace(ext.upper(), ext.lower())
 
-    # Check and fix image type file extensions, if necessary
-    if 'input_type' in config and not config['input_type'].startswith('.'):
-        config['input_type'] = '.' + config['input_type']
-    if 'output_type' in config and not config['output_type'].startswith('.'):
-        config['output_type'] = '.' + config['output_type']
-
     # Format directories for cross-platform compatibility
     config.update(
         {k: Path(i) for k,i in config.items() if 'path' in k or 'file' in k}
         )
     
-    # Check for file names included in config paths where needed
-    if config["metadata_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["output_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["model_pth_file"].suffix.lower() != ".pth":
-        raise ValueError("The 'model_pth_file' key in the configuration file must include a file name ending with '.pth'.")
+    # Check and fix image type file extensions, if necessary
+    if 'input_type' in config and not config['input_type'].startswith('.'):
+        config['input_type'] = '.' + config['input_type']
+    if 'output_type' in config and not config['output_type'].startswith('.'):
+        config['output_type'] = '.' + config['output_type']
 
     value_errors = []
 
@@ -226,7 +233,6 @@ def combine_masks(annotations):
     for ann in annotations:
         xmin, ymin, w, h = ann['bbox']
         if(w*h < 0.9*img_area):
-            m = ann['segmentation']
             foreground_anns.append(ann)
     # Keep track of which masks should be deleted
     del_indices = [0]
@@ -543,10 +549,10 @@ CONFIG_DEFAULTS = {
     "binary_threshold": 100,
     "bottom_pad": 0.35,
     "downsample": 0.5,
-    "normalization": "none",
-    "output_type": ".jpg",
     "input_type": ".tif",
     "invert": False,
+    "normalization": "none",
+    "output_type": ".jpg",
     "pad": 0.05,
     "points_per_side": 8,
     "sam_model_type": "vit_h",

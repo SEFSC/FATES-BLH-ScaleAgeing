@@ -16,9 +16,9 @@ Authors: aotian.zheng@noaa.gov (model development, training, validation, testing
          and matt.grossi@noaa.gov (model testing, implementation, code
          refactoring for user functionality, documentation) with assistance
          from Google Gemini Coding Partner
-Version: 2026.1.0
+Version: 2026.1.2
 Release Date: September 2025
-Last Updated: July 2026
+Last Updated: September 2026
 """
 
 import argparse
@@ -26,7 +26,6 @@ import difflib
 import os
 from pathlib import Path
 from PIL import Image
-import warnings
 import yaml
 
 import numpy as np
@@ -39,7 +38,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from typing import Any, Callable, List, Optional, Type, Union, Tuple
+from typing import Any, Callable, List, Optional, Type, Union
 
 def load_yaml(file_path: str | Path) -> dict:
     """Load a YAML configuration file with fallback support for raw Windows
@@ -81,13 +80,30 @@ def clean_and_validate_config(config: dict):
     # Define expected keys
     REQUIRED_KEYS = {
         'collection_date_colname', 'fish_id_colname', 'fish_length_colname',
-        'fish_weight_colname', 'metadata_csv_file', 'model_pth_file',
-        'output_csv_file', 'processed_image_path'
+        'fish_weight_colname', 'metadata_csv_file', 'output_csv_file', 'processed_image_path'
         }
-    VALID_KEYS = REQUIRED_KEYS | {
-        'binary_threshold', 'bottom_pad', 'downsample', 'input_type', 'invert',
-        'normalization', 'output_type', 'pad', 'points_per_side',
-        'raw_image_path', 'sam_weights_path', 'sam_model_type', 'segment',
+    VALID_KEYS = {
+        'binary_threshold',
+        'bottom_pad',
+        'collection_date_colname',
+        'downsample',
+        'fish_id_colname',
+        'fish_length_colname',
+        'fish_weight_colname',
+        'input_type',
+        'invert',
+        'metadata_csv_file',
+        'model_pth_file',
+        'normalization',
+        'output_csv_file',
+        'output_type',
+        'pad',
+        'points_per_side',
+        'processed_image_path',
+        'raw_image_path',
+        'sam_model_type',
+        'sam_weights_path',
+        'segment',
         'stability_score_thresh'
         }
     
@@ -133,13 +149,19 @@ def clean_and_validate_config(config: dict):
         {k: Path(i) for k,i in config.items() if 'path' in k or 'file' in k}
         )
     
+    # Check and fix image type file extensions, if necessary
+    if 'input_type' in config and not config['input_type'].startswith('.'):
+        config['input_type'] = '.' + config['input_type']
+    if 'output_type' in config and not config['output_type'].startswith('.'):
+        config['output_type'] = '.' + config['output_type']
+
     # Check for file names included in config paths where needed
-    if config["metadata_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["output_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
     if config["model_pth_file"].suffix.lower() != ".pth":
         raise ValueError("The 'model_pth_file' key in the configuration file must include a file name ending with '.pth'.")
+    if config["output_csv_file"].suffix.lower() != ".csv":
+        raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
+    if config["metadata_csv_file"].suffix.lower() != ".csv":
+        raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
 
 # Function to create a 3x3 convolutional layer
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
@@ -812,12 +834,24 @@ def main():
     parser.add_argument("-c", "--config_path", help="Path to configuration yaml file", required=True)
     args = parser.parse_args()
 
+    # PWD absolute path
+    script_dir = Path(__file__).resolve().parent
+
     # Open the configuration file and read in the parameters
     try:
         config = load_yaml(file_path=args.config_path)
     except FileNotFoundError:
         print(f"Error: The configuration file was not found at {args.config_path}")
         return
+
+    # Set defaults for settings that can also be set in the YAML configuration file
+    CONFIG_DEFAULTS = {
+        "model_pth_file": str(script_dir / 'weights' / 'multimodal-model-v2025.pth'),
+    }
+    # Merge default settings into configuration file
+    # (If a key exists in both dictionaries, the value from the second dictionary,
+    # `config`, replaces the value from the first dictionary, the default value.)
+    config = CONFIG_DEFAULTS | config
 
     # Image transformations: resizing, cropping, normalization
     data_transforms = transforms.Compose(
