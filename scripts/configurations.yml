@@ -18,6 +18,12 @@ input_type: '.tif'
 # (Ignored if using the 'image only' model.)
 metadata_csv_file: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/metadata/metadata.csv'
 
+# Relevant database field names. Wrap in quotations to support spaces.
+fish_id_colname: 'Scaleno'
+fish_length_colname: 'Fork Length Mm'
+fish_weight_colname: 'Weight G'
+collection_date_colname: 'Month'
+
 # Path and name of file to save age predictions
 output_csv_file: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/model_predictions/predictions.csv'
 
