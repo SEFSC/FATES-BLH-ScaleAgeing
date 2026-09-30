@@ -27,9 +27,6 @@ collection_date_colname: 'Month'
 # Path and name of file to save age predictions
 output_csv_file: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/model_predictions/predictions.csv'
 
-# Path to model weights (directory and file name of weights file)
-model_pth_file: 'C:\Users\user.name\Documents\gh-repos\FATES-BLH-ScaleAgeing\scripts\weights\image-model-v2025.pth'
-
 # If cropping/padding fails, due to, e.g., variations in image coloring, such as
 # foreground/background constrast, try tweaking `binary_threshold` first
 # (default 100), followed by `bottom_pad` and `pad`, as needed (defaults 0.35
