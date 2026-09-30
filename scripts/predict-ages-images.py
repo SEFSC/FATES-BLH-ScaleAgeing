@@ -25,7 +25,6 @@ import difflib
 import os
 from pathlib import Path
 from PIL import Image
-import yaml
 
 import torch
 from torch.utils.data import DataLoader
@@ -33,6 +32,7 @@ from torch.utils.data.dataset import Dataset  # For custom datasets
 from torchvision import transforms
 from torchvision.models import resnet18
 from tqdm import tqdm
+import yaml
 
 def load_yaml(file_path: str | Path) -> dict:
     """Load a YAML configuration file with fallback support for raw Windows
@@ -138,10 +138,16 @@ def clean_and_validate_config(config: dict):
             v = v.replace(ext.upper(), ext.lower())
 
     # Format directories for cross-platform compatibility
-    config.update(
-        {k: Path(i) for k,i in config.items() if 'path' in k or 'file' in k}
-        )
-    
+    for k, v in config.items():
+        if 'path' in k or 'file' in k:
+            if isinstance(v, str):
+                # Strip accidental literal quotes/spaces and convert backslashes to forward slashes
+                clean_path = v.strip(" \t\"'").replace('\\', '/')
+                config[k] = Path(clean_path).expanduser()
+            else:
+                # Fallback if the path is already a Path object or unexpected type
+                config[k] = Path(v)
+     
     # Check and fix image type file extensions, if necessary
     if 'input_type' in config and not config['input_type'].startswith('.'):
         config['input_type'] = '.' + config['input_type']
@@ -149,9 +155,9 @@ def clean_and_validate_config(config: dict):
         config['output_type'] = '.' + config['output_type']
 
     # Check for file names included in config paths where needed
-    if config["model_pth_file"].suffix.lower() != ".pth":
+    if "model_pth_file" in config and config["model_pth_file"].suffix.lower() != ".pth":
         raise ValueError("The 'model_pth_file' key in the configuration file must include a file name ending with '.pth'.")
-    if config["output_csv_file"].suffix.lower() != ".csv":
+    if "output_csv_file" in config and config["output_csv_file"].suffix.lower() != ".csv":
         raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
 
 class FishTestDataset(Dataset):
@@ -192,7 +198,7 @@ class FishTestDataset(Dataset):
 
         # Image Name
         self.image_name = [
-            f for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f))
+            f.name for f in self.image_dir.iterdir() if f.is_file()
             ]
 
     def __len__(self):
@@ -202,7 +208,7 @@ class FishTestDataset(Dataset):
     def __getitem__(self, index):
         """Returns the image and its filename at the specified index."""
         # Open the specified image
-        img_path = os.path.join(self.image_dir, str(self.image_name[index]))
+        img_path = self.image_dir / str(self.image_name[index])
         image = Image.open(img_path)
         
         # Transform the image, if transforms are provided
@@ -230,7 +236,7 @@ def main():
 
     # Set defaults for settings that can also be set in the YAML configuration file
     CONFIG_DEFAULTS = {
-        "model_pth_file": str(script_dir / 'weights' / 'image-model-v2025.pth'),
+        "model_pth_file": script_dir / 'weights' / 'image-model-v2025.pth'
     }
     # Merge default settings into configuration file
     # (If a key exists in both dictionaries, the value from the second dictionary,

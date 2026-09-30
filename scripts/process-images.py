@@ -25,13 +25,13 @@ import argparse
 import difflib
 import os
 from pathlib import Path
-import yaml
 
 import cv2 as cv
 import numpy as np
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 import torch
 from tqdm import tqdm
+import yaml
 
 def load_yaml(file_path: str | Path) -> dict:
     """Load a YAML configuration file with fallback support for raw Windows
@@ -137,11 +137,17 @@ def clean_and_validate_config(config: dict):
             v = v.replace(ext.upper(), ext.lower())
 
     # Format directories for cross-platform compatibility
-    config.update(
-        {k: Path(i) for k,i in config.items() if 'path' in k or 'file' in k}
-        )
-    
-    # Check and fix image type file extensions, if necessary
+    for k, v in config.items():
+        if 'path' in k or 'file' in k:
+            if isinstance(v, str):
+                # Strip accidental literal quotes/spaces and convert backslashes to forward slashes
+                clean_path = v.strip(" \t\"'").replace('\\', '/')
+                config[k] = Path(clean_path).expanduser()
+            else:
+                # Fallback if the path is already a Path object or unexpected type
+                config[k] = Path(v)
+     
+      # Check and fix image type file extensions, if necessary
     if 'input_type' in config and not config['input_type'].startswith('.'):
         config['input_type'] = '.' + config['input_type']
     if 'output_type' in config and not config['output_type'].startswith('.'):
@@ -181,7 +187,7 @@ def clean_and_validate_config(config: dict):
             value_errors.append(
                 "  - 'sam_weights_path' is missing or empty, but is required when 'segment' is set to 'sam'."
             )
-        elif ".pth" not in config["sam_weights_path"]:
+        elif config["sam_weights_path"].suffix.lower() != ".pth":
             value_errors.append("  - The 'sam_weights_path' key in the configuration file must include a file name ending with '.pth'.")
 
     # Verify normalization key
@@ -497,42 +503,42 @@ def preprocess_folder(image_dir, output_dir, seg_opt="binary", extension=".tif",
     """
 
     # Create output directory if it doesn't exist
-    if(not os.path.exists(output_dir)):
-        os.mkdir(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Loop through all images in the image directory
-    for file in tqdm(os.listdir(image_dir), desc="Processing images"):
-        if file.endswith(extension):
-            # Read in the original image
-            image = cv.imread(os.path.join(image_dir, file))
+    # Loop through all images in the image directory that match the extension
+    for file_path in tqdm(list(image_dir.glob(f"*{extension}")), desc="Processing images"):
+        
+        # Read in the original image (cv2 requires a string path)
+        image = cv.imread(str(file_path))
+        
+        # Crop and pad the image, applying segmentation if specified
+        if(seg_opt == "binary"):
+            cropped_image = crop_and_pad_binary_threshold(image=image, kernel_size=kernel_size, threshold=binary_threshold, pad=pad, bottom_pad=bottom_pad)
+        elif(seg_opt == "sam"):
+            cropped_image = crop_and_pad_sam(image=image, down_scale=down_scale, sam_type=sam_type, sam_model_path=sam_model_path, num_points=num_points, threshold=sam_threshold, pad=pad, bottom_pad=bottom_pad)
+        else:
+            cropped_image = image
 
-            # Crop and pad the image, applying segmentation if specified
-            if(seg_opt == "binary"):
-                cropped_image = crop_and_pad_binary_threshold(image=image, kernel_size=kernel_size, threshold=binary_threshold, pad=pad, bottom_pad=bottom_pad)
-            elif(seg_opt == "sam"):
-                cropped_image = crop_and_pad_sam(image=image, down_scale=down_scale, sam_type=sam_type, sam_model_path=sam_model_path, num_points=num_points, threshold=sam_threshold, pad=pad, bottom_pad=bottom_pad)
-            else:
-                cropped_image = image
+        # Apply normalization and color inversion to the cropped image, if specified.
+        # Image is converted to grayscale, cropped if desired, normalized, then converted back to BGR for tensorflow.
+        if(normalization == "he"):
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+            if(invert):
+                cropped_image = 255-cropped_image
+            cropped_image = cv.equalizeHist(cropped_image)
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
+        elif(normalization =="clahe"):
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+            if(invert):
+                cropped_image = 255-cropped_image
+            clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            cropped_image = clahe.apply(cropped_image)
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
 
-            # Apply normalization and color inversion to the cropped image, if specified.
-            # Image is converted to grayscale, cropped if desired, normalized, then converted back to BGR for tensorflow.
-            if(normalization == "he"):
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-                if(invert):
-                    cropped_image = 255-cropped_image
-                cropped_image = cv.equalizeHist(cropped_image)
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
-            elif(normalization =="clahe"):
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-                if(invert):
-                    cropped_image = 255-cropped_image
-                clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-                cropped_image = clahe.apply(cropped_image)
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
-
-            # Write the new cropped image to the output directory
-            cv.imwrite(os.path.join(output_dir, os.path.splitext(file)[0]+out_type), cropped_image)
-
+        # Write the new cropped image to the output directory
+        out_file = output_dir / f"{file_path.stem}{out_type}"
+        cv.imwrite(str(out_file), cropped_image)
+        
 # Parse command line arguments. Currently only requires a path to a configuration yaml file.
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config_path", help="path to configuration yaml file")
