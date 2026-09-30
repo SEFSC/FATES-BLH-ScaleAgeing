@@ -206,14 +206,18 @@ class FishTestDataset(Dataset):
         return len(self.image_name)
 
     def __getitem__(self, index):
-        """Returns the image and its filename at the specified index."""
-        # Open the specified image
+        """Returns the image, metadata, and label at the specified index."""
         img_path = self.image_dir / str(self.image_name[index])
-        image = Image.open(img_path)
         
-        # Transform the image, if transforms are provided
-        if self.transforms:
-            image = self.transforms(image)
+        try:
+            # Open and transform the specified image
+            image = Image.open(img_path)
+            if self.transforms:
+                image = self.transforms(image)
+        except Exception as e:
+            # Print the exact file causing the crash before raising the error
+            print(f"\n[!] CRASHED WHILE READING IMAGE: {img_path}")
+            raise e
 
         return image, self.image_name[index]
 
@@ -274,27 +278,23 @@ def main():
     model.to(device)
 
     # Create output file and write header
-    try:
-        with open(config["output_csv_file"], 'w') as file:
-            file.write("Image Name, Predicted Age\n")
+    with open(config["output_csv_file"], 'w') as file:
+        file.write("Image Name, Predicted Age\n")
 
-            # Loop through the dataset and make predictions
-            for images, img_path in tqdm(test_loader, desc="Predicting ages"):
-                images = images.to(device)
-                outputs = model(images)
-                outputs = torch.squeeze(outputs)
-                _, preds = torch.max(outputs, 1)
-                preds = preds.cpu().detach().numpy()
-                for i in range(preds.shape[0]):
-                    age = str(preds[i])
-                    # Change the maximum age class to "4+"
-                    if(preds[i] == 4):
-                        age = "4+"
-                    file.write("%s,%s\n" % (img_path[i], age))
-        print(f'Inference complete. Results saved to {config["output_csv_file"]}')
+        # Loop through the dataset and make predictions
+        for images, img_path in tqdm(test_loader, desc="Predicting ages"):
+            images = images.to(device)
+            outputs = model(images)
+            outputs = torch.squeeze(outputs)
+            _, preds = torch.max(outputs, 1)
+            preds = preds.cpu().detach().numpy()
+            for i in range(preds.shape[0]):
+                age = str(preds[i])
+                # Change the maximum age class to "4+"
+                if(preds[i] == 4):
+                    age = "4+"
+                file.write("%s,%s\n" % (img_path[i], age))
+    print(f'Inference complete. Results saved to {config["output_csv_file"]}')
     
-    except Exception as e:
-        print(f"An error occurred during inference: {e}")
-
 if __name__ == "__main__":
     main()
