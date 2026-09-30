@@ -164,9 +164,9 @@ def clean_and_validate_config(config: dict):
     # Check for file names included in config paths where needed
     if "model_pth_file" in config and config["model_pth_file"].suffix.lower() != ".pth":
         raise ValueError("The 'model_pth_file' key in the configuration file must include a file name ending with '.pth'.")
-    if "output_csv_file" in config and ["output_csv_file"].suffix.lower() != ".csv":
+    if "output_csv_file" in config and config["output_csv_file"].suffix.lower() != ".csv":
         raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if  "metadata_csv_file" in config and ["metadata_csv_file"].suffix.lower() != ".csv":
+    if  "metadata_csv_file" in config and config["metadata_csv_file"].suffix.lower() != ".csv":
         raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
 
 # Function to create a 3x3 convolutional layer
@@ -852,7 +852,8 @@ def main():
 
     # Set defaults for settings that can also be set in the YAML configuration file
     CONFIG_DEFAULTS = {
-        "model_pth_file": script_dir / 'weights' / 'multimodal-model-v2025.pth'
+        "model_pth_file": script_dir / 'weights' / 'multimodal-model-v2025.pth',
+        "output_type": ".jpg"
     }
     # Merge default settings into configuration file
     # (If a key exists in both dictionaries, the value from the second dictionary,
