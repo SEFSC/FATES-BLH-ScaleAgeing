@@ -484,7 +484,7 @@ Note
 <p>The instructions on this page only need to be carried out once. If you have already installed the required dependencies and created a virtual environment, skip ahead to <a href="../content/usage.html">Using the Model</a>.</p>
 </div>
 </div>
-<p>Download and install Python <a href="https://www.python.org/downloads/release/python-31011/">3.10</a> (recommended) or 3.9, if needed. If this is your first installation of Python on your workstation, check the “Add Python to PATH” box during echo installation.</p>
+<p>Download and install Python <a href="https://www.python.org/downloads/release/python-31011/">3.10</a> (recommended) or 3.9, if needed. If this is your first installation of Python on your workstation, check the “Add Python to PATH” box during the installation.</p>
 <section id="basic-users" class="level2">
 <h2 class="anchored" data-anchor-id="basic-users">Basic Users</h2>
 <p>These instructions assume no working knowledge of command line interface or GitHub.</p>
@@ -563,9 +563,19 @@ Important
 <li>Check the system for a compatible Python installation. If none is found, the user will be prompted to <a href="#getting-started">install the appropriate version</a> and directed to the official Python distribution site.</li>
 <li>Look for a project-specific Python virtual environment (called <code>.venv</code>) in the project parent folder. If one is found, it will be activated. Otherwise, one will be created and activated and the required Python packages will be installed in it from the provided <code>requirements.txt</code> file. This may take several minutes to complete but only needs to happen once.</li>
 </ol>
-<p>::: {.callout-tip title=Windows path limits}</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Windows path limits">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Windows path limits
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>If package installation fails, it may be due to <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry">Windows path length limitations</a>. The most common culprit of this is PyTorch, which contains thousands of files within nested directories. Try relocating the downloaded or cloned project folder to a higher level directory on your machine. For example, if your project is currently in <code>C:\Users\user.name\Documents\models\menhaden\ageing\FATES-BLH-ScaleAgeing</code>, a path that itself contains more than 70 characters out of the allotted 250, consider moving it – and renaming the project directory to, for example, <code>C:\Users\user.name\Documents\ageing</code>. Alternatively, the 250-character limit can be disabled with a Windows registry setting, but this will require administrator privileges.</p>
-<p>:::</p>
+</div>
+</div>
 <p>If an installation fails or you want to reinstall something, the easiest way to do so is to delete the <code>.venv</code> directory and relaunch the model.</p>
 
 
