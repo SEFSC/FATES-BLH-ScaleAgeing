@@ -10,7 +10,7 @@ order: 1
 The instructions on this page only need to be carried out once. If you have already installed the required dependencies and created a virtual environment, skip ahead to [Using the Model](usage.qmd).
 :::
 
-Download and install Python [3.10](https://www.python.org/downloads/release/python-31011/) (recommended) or 3.9, if needed. If this is your first installation of Python on your workstation, check the "Add Python to PATH" box during echo installation.
+Download and install Python [3.10](https://www.python.org/downloads/release/python-31011/) (recommended) or 3.9, if needed. If this is your first installation of Python on your workstation, check the "Add Python to PATH" box during the installation.
 
 ## Basic Users
 
@@ -81,7 +81,7 @@ A Python virtual environment will automatically be created and configured the fi
 1. Check the system for a compatible Python installation. If none is found, the user will be prompted to [install the appropriate version](#getting-started) and directed to the official Python distribution site.
 2. Look for a project-specific Python virtual environment (called `.venv`) in the project parent folder. If one is found, it will be activated. Otherwise, one will be created and activated and the required Python packages will be installed in it from the provided `requirements.txt` file. This may take several minutes to complete but only needs to happen once.
 
-::: {.callout-tip title=Windows path limits}
+::: {.callout-tip title="Windows path limits"}
 
 If package installation fails, it may be due to [Windows path length limitations](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry). The most common culprit of this is PyTorch, which contains thousands of files within nested directories. Try relocating the downloaded or cloned project folder to a higher level directory on your machine. For example, if your project is currently in `C:\Users\user.name\Documents\models\menhaden\ageing\FATES-BLH-ScaleAgeing`, a path that itself contains more than 70 characters out of the allotted 250, consider moving it -- and renaming the project directory to, for example, `C:\Users\user.name\Documents\ageing`. Alternatively, the 250-character limit can be disabled with a Windows registry setting, but this will require administrator privileges.
 

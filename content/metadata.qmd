@@ -6,7 +6,7 @@ metadata-files:
 order: 4
 ---
 
-The multimodal ageing model integrates descriptive metadata for each fish with scale images to predict age. The current version of the model uses fish length, weight, and the month the fish was caught. These variables were found, through trial and error, to be the most helpful attributes for improving age predictions. The model requires this information be stored in a single CSV file with one entry per sample to be processed. This CSV file can be called anything, but for this discussion, we will call it `metadata.csv` for convenience.
+The multimodal ageing model integrates descriptive metadata for each fish with scale images to predict age. The current version of the model uses fish length, weight, and the month of catch. These variables were found, through trial and error, to be the most helpful attributes for improving age predictions. The model requires this information be stored in a single CSV file with one entry per sample to be processed. This CSV file can be called anything, but for this discussion, we will call it `metadata.csv` for convenience.
 
 Consider three images of scales named `25123.jpg`, `25234.jpg`, and `25345.jpg`, stored in a single directory, for which ages are desired. The accompanying `metadata.csv` file would look like this:
 
