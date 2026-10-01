@@ -49,9 +49,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-2651a547a7cdce930299f9de7f1afd3b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-4f39afa3ed3c71efb1cda8003f6a43f0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-2651a547a7cdce930299f9de7f1afd3b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-e027bdc9073d715ef6b9a46e85671c21.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-408faf6113e8333c3c758c14e301fd71.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-e027bdc9073d715ef6b9a46e85671c21.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -426,7 +426,7 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This model integrates descriptive metadata for each fish with scale images to predict age. The current version of the model uses fish length, weight, and the month the fish was caught. These variables were found, through trial and error, to be the most helpful attributes for improving age predictions. The model requires this information be stored in a single CSV file with one entry per sample to be processed. This CSV file can be called anything, but for this discussion, we will call it <code>metadata.csv</code> for convenience.</p>
+<p>The multimodal ageing model integrates descriptive metadata for each fish with scale images to predict age. The current version of the model uses fish length, weight, and the month the fish was caught. These variables were found, through trial and error, to be the most helpful attributes for improving age predictions. The model requires this information be stored in a single CSV file with one entry per sample to be processed. This CSV file can be called anything, but for this discussion, we will call it <code>metadata.csv</code> for convenience.</p>
 <p>Consider three images of scales named <code>25123.jpg</code>, <code>25234.jpg</code>, and <code>25345.jpg</code>, stored in a single directory, for which ages are desired. The accompanying <code>metadata.csv</code> file would look like this:</p>
 <table class="caption-top table">
 <caption><code>metadata.csv</code></caption>
@@ -471,20 +471,13 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
-<p>Note that the column headers can be anything, but the model expects these variables <em>in this order</em>. Also notice that each image file has an entry and each entry is on its own line. If an image lacks a metadata entry, or if a metadata entry exists but an image does not, the model will fail to run. Finally, the image file names in the first column do not need to include the file extension. If the extensions are missing, they will automatically be added using the <code>output_type</code> extension provided in <code>configurations.yml</code>.</p>
-<div class="callout callout-style-default callout-important callout-titled" title="Remember!">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Remember!
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The column headers in <code>metadata.csv</code> can be called anything, <strong>but the variables must be provided in the order shown</strong>: image name, length, weight, month of catch.</p>
-</div>
-</div>
+<p>Some things to note:</p>
+<ol type="1">
+<li>The column headers can be anything, but the user <a href="../content/configuration.html#options">must specify</a> in the <code>configuation.yml</code> file which column corresponds to which variable. The column names passed to <code>collection_date_colname</code>, <code>fish_id_colname</code>, <code>fish_length_colname</code>, and <code>fish_weight_colname</code> are all case-sensitive and should be enclosed in quotation marks if the column name contains spaces or special characters.</li>
+<li>The metadata file can include other columns as well, but only those identified as <code>collection_date_colname</code>, <code>fish_id_colname</code>, <code>fish_length_colname</code>, and <code>fish_weight_colname</code> will be used. Thus, there is no need to filter out unused columns when downloading from a database.</li>
+<li>Notice that each image file has an entry and each entry is on its own line. If an image lacks a metadata entry, or if a metadata entry exists but an image does not, the model will fail to run. This is by design.</li>
+<li>Finally, the image file names in the first column do not need to include the file extension. If the extensions are missing, they will automatically be added using the <code>output_type</code> extension provided in <code>configurations.yml</code>.</li>
+</ol>
 
 
 

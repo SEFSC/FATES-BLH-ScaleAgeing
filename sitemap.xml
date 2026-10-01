@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/setup.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
-  </url>
-  <url>
-    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/training.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
-  </url>
-  <url>
-    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/jupyter.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
-  </url>
-  <url>
-    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/mount.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
-  </url>
-  <url>
-    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/index.html</loc>
-    <lastmod>2026-08-11T21:47:12.745Z</lastmod>
+    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/metadata.html</loc>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
   </url>
   <url>
     <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/usage.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
+  </url>
+  <url>
+    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/setup.html</loc>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
   </url>
   <url>
     <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/acknowledgements.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
   </url>
   <url>
-    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/metadata.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
+    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/index.html</loc>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
   </url>
   <url>
     <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/configuration.html</loc>
-    <lastmod>2026-08-11T21:47:12.744Z</lastmod>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
+  </url>
+  <url>
+    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/jupyter.html</loc>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
+  </url>
+  <url>
+    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/training.html</loc>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
+  </url>
+  <url>
+    <loc>https://sefsc.github.io/FATES-BLH-ScaleAgeing/content/mount.html</loc>
+    <lastmod>2026-10-01T20:16:18.385Z</lastmod>
   </url>
 </urlset>

@@ -83,9 +83,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-2651a547a7cdce930299f9de7f1afd3b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-4f39afa3ed3c71efb1cda8003f6a43f0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-2651a547a7cdce930299f9de7f1afd3b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-e027bdc9073d715ef6b9a46e85671c21.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-408faf6113e8333c3c758c14e301fd71.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-e027bdc9073d715ef6b9a46e85671c21.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -441,11 +441,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#basic-users" id="toc-basic-users" class="nav-link active" data-scroll-target="#basic-users">Basic Users</a></li>
   <li><a href="#advanced-users" id="toc-advanced-users" class="nav-link" data-scroll-target="#advanced-users">Advanced Users</a>
   <ul class="collapse">
-  <li><a href="#software-installation" id="toc-software-installation" class="nav-link" data-scroll-target="#software-installation">Software Installation</a></li>
-  <li><a href="#clone-the-repository" id="toc-clone-the-repository" class="nav-link" data-scroll-target="#clone-the-repository">Clone the Repository</a></li>
   <li><a href="#download-segmentation-model" id="toc-download-segmentation-model" class="nav-link" data-scroll-target="#download-segmentation-model">Download Segmentation Model</a></li>
-  <li><a href="#create-a-virtual-environment" id="toc-create-a-virtual-environment" class="nav-link" data-scroll-target="#create-a-virtual-environment">Create a Virtual Environment</a></li>
-  <li><a href="#option-1-pip" id="toc-option-1-pip" class="nav-link" data-scroll-target="#option-1-pip">Option 1: pip</a></li>
+  <li><a href="#virtual-environment" id="toc-virtual-environment" class="nav-link" data-scroll-target="#virtual-environment">Virtual Environment</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/SEFSC/FATES-BLH-ScaleAgeing/blob/docs/content/setup.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/SEFSC/FATES-BLH-ScaleAgeing/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -497,11 +494,9 @@ Note
 <section id="advanced-users" class="level2">
 <h2 class="anchored" data-anchor-id="advanced-users">Advanced Users</h2>
 <p>Much of the following is carried out using command line. In the instructions below, “command line terminal” or “terminal” refer to any command line application for the given operating system. For Windows, this is commonly Command Prompt or Windows Powershell. These use DOS commands. For UNIX users, Git Bash is a good alternative; it is included in <a href="#git">Git for Windows</a> and allows UNIX commands to be used instead of DOS.</p>
-<section id="software-installation" class="level3">
-<h3 class="anchored" data-anchor-id="software-installation">Software Installation</h3>
-<section id="git" class="level4">
-<h4 class="anchored" data-anchor-id="git">git</h4>
-<p>If the <a href="https://git-scm.com/downloads">Git CLI</a> is already installed, there should be a Git Bash program in your Applications. If so, open this program and verify everything is working by typing</p>
+<section id="git-installation" class="level4">
+<h4 class="anchored" data-anchor-id="git-installation">Git Installation</h4>
+<p>Download and install <a href="https://git-scm.com/downloads">git</a>. This does not need administrative privileges to install at the user level. Open the newly-installed Git Bash application and verify everything is working by typing</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This should display the version of git installed on the system.</p>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -517,44 +512,13 @@ Note
 <p>This should already be installed for all users on the Advanced Technology GPU machine.</p>
 </div>
 </div>
-<p>If needed, download and install the <a href="https://git-scm.com/downloads">Git CLI</a> before continuing. This does not need administrative privileges to install at the user level. Confirm that it has been installed by opening a command line terminal and entering <code>git --version</code>.</p>
 </section>
-<section id="conda" class="level4">
-<h4 class="anchored" data-anchor-id="conda">conda</h4>
-<p><em>This is optional for users who prefer Anaconda over pip.</em></p>
-<p>Download and install <a href="https://www.anaconda.com/">Anaconda</a>.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>This is already installed on the Advanced Technology GPU machine, but it may need to be set up for each user. Keep reading to learn more.</p>
-</div>
-</div>
-<p>Verify installation and configuration of Anaconda using a command line terminal:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If Anaconda is configured properly, this should print the version of the installed software. If, instead, it returns a “command not found” error, and you know Anaconda has been installed, you most likely need to <a href="https://stackoverflow.com/questions/44597662/conda-command-is-not-recognized-on-windows-10">add Conda to your path variables</a> so that your operating system knows where to find it. First, find where it was installed, and then, in Windows:</p>
-<ol type="1">
-<li>In the Windows taskbar, search for “environment” and select “Edit environmental variables for your account”</li>
-<li>In the top panel of the window that opens, click the “Path” user variable, then select “Edit…”.</li>
-<li>You need to add two new paths, one at a time. Click “New” and enter the full path (starting with “C:") of the directory containing Anaconda. This may, for example, be <code>C:\Users\user.name\AppData\Local\anaconda3</code>, if installed at the user level (where <code>user.name</code> is your user name), or <code>C:\ProgramData\anaconda3</code> if installed for all users.</li>
-<li>Repeat step 3 with the same path but with <code>\Scripts\</code> appended to the end. For example, <code>C:\ProgramData\anaconda3\Scripts\</code>.</li>
-<li>Click Ok (twice) to save and exit Settings.</li>
-</ol>
-<p>Close and reopen your command line terminal. Then type <code>conda init</code> to initialize Anaconda. You may need to close and reopen your command line terminal again (it will prompt you if needed.) Finally, try the <code>conda --version</code> command again. It should work now.</p>
-</section>
-</section>
-<section id="clone-the-repository" class="level3">
-<h3 class="anchored" data-anchor-id="clone-the-repository">Clone the Repository</h3>
+<section id="clone-the-repository" class="level4">
+<h4 class="anchored" data-anchor-id="clone-the-repository">Clone the Repository</h4>
 <p>The model code and most of its dependencies are <a href="https://github.com/SEFSC/FATES-BLH-ScaleAgeing">available on GitHub</a>. To retrieve it, clone the <code>main</code> branch of this repo, which is currently functioning as the production version of the model:</p>
 <ol type="1">
-<li><p>Open a terminal window and change directories (<code>cd</code>) to wherever you want the code to reside. For example,</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> Documents/ageing</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<li><p>Open Git Bash and change directories (<code>cd</code>) to wherever you want the code to reside. For example,</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> Documents/ageing</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -569,9 +533,9 @@ Important
 </div>
 </div></li>
 <li><p>Clone the repository into the desired directory</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="at">-b</span> main https://github.com/SEFSC/FATES-BLH-ScaleAgeing .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="at">-b</span> main https://github.com/SEFSC/FATES-BLH-ScaleAgeing .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>if you want all of the repo contents in the current directory, or</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="at">-b</span> main https://github.com/SEFSC/FATES-BLH-ScaleAgeing</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="at">-b</span> main https://github.com/SEFSC/FATES-BLH-ScaleAgeing</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>if you want the repo contents to be downloaded into a new subdirectory called <code>FATES-BLH-ScaleAgeing</code>. This is just personal preference. (Note the difference between the two commands is the dot <code>.</code> at the end.)</p></li>
 </ol>
 </section>
@@ -592,46 +556,19 @@ Important
 </div>
 </div>
 </section>
-<section id="create-a-virtual-environment" class="level3">
-<h3 class="anchored" data-anchor-id="create-a-virtual-environment">Create a Virtual Environment</h3>
-<p>Virtual environments are used to manage Python packages. Options exist for either pip or conda environments. Choose one.</p>
-</section>
-<section id="option-1-pip" class="level3">
-<h3 class="anchored" data-anchor-id="option-1-pip">Option 1: pip</h3>
-<p>Create and activate a new pip virtual environment and install package dependencies using the <code>requirements.txt</code> file packaged with the repo:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv .scaleageing</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">.scaleageing\Scripts\activate</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--upgrade</span> pip</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements.txt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<section id="option-2-conda" class="level4">
-<h4 class="anchored" data-anchor-id="option-2-conda">Option 2: conda</h4>
-<p>Create a virtual environment specifically for this model. In a terminal window, navigate (<code>cd</code>) into the directory containing the <code>environment.yml</code> file. This should be the parent directory of the cloned repository. For example,</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="st">"c:/Users/user.name/Documents/ageing/FATES-BLH-ScaleAgeing"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>where <code>user.name</code> is your computer user name.</p>
-<p>Then:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--name</span> scaleageing <span class="at">--file</span><span class="op">=</span><span class="st">"environment.yml"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This command creates a virtual environment called <code>scaleageing</code> and downloads and installs all of the package dependencies listed in the <code>environment.yml</code> file contained in the repo.</p>
-<p>Note that this virtual environment can be named anything at all, but remember what you call it – and keep it simple – because it will be invoked by name each time you use the model.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="Deleting a virtual environment">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Deleting a virtual environment
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>In the unlikely event you need to delete this virtual environment, such as to troubleshoot or to restart from a clean slate, use the following:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> remove <span class="at">--name</span> ENV_NAME <span class="at">--all</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>where <code>ENV_NAME</code> is the name of the virtual environment to be deleted (<em>e.g.</em>, <code>scaleageing</code>.)</p>
-</div>
-</div>
-<p><strong>Congratulations! Now that your environment is set up – and this only needs to be done once, the first time – we are ready to start <a href="../content/usage.html">using the model</a>.</strong></p>
+<section id="virtual-environment" class="level3">
+<h3 class="anchored" data-anchor-id="virtual-environment">Virtual Environment</h3>
+<p>A Python virtual environment will automatically be created and configured the first time you <a href="../content/usage.html">launch the model or process images</a>. The utility will automatically:</p>
+<ol type="1">
+<li>Check the system for a compatible Python installation. If none is found, the user will be prompted to <a href="#getting-started">install the appropriate version</a> and directed to the official Python distribution site.</li>
+<li>Look for a project-specific Python virtual environment (called <code>.venv</code>) in the project parent folder. If one is found, it will be activated. Otherwise, one will be created and activated and the required Python packages will be installed in it from the provided <code>requirements.txt</code> file. This may take several minutes to complete but only needs to happen once.</li>
+</ol>
+<p>::: {.callout-tip title=Windows path limits}</p>
+<p>If package installation fails, it may be due to <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry">Windows path length limitations</a>. The most common culprit of this is PyTorch, which contains thousands of files within nested directories. Try relocating the downloaded or cloned project folder to a higher level directory on your machine. For example, if your project is currently in <code>C:\Users\user.name\Documents\models\menhaden\ageing\FATES-BLH-ScaleAgeing</code>, a path that itself contains more than 70 characters out of the allotted 250, consider moving it – and renaming the project directory to, for example, <code>C:\Users\user.name\Documents\ageing</code>. Alternatively, the 250-character limit can be disabled with a Windows registry setting, but this will require administrator privileges.</p>
+<p>:::</p>
+<p>If an installation fails or you want to reinstall something, the easiest way to do so is to delete the <code>.venv</code> directory and relaunch the model.</p>
 
 
-</section>
 </section>
 </section>
 
