@@ -240,7 +240,8 @@ def main():
 
     # Set defaults for settings that can also be set in the YAML configuration file
     CONFIG_DEFAULTS = {
-        "model_pth_file": script_dir / 'weights' / 'image-model-v2025.pth'
+        "model_pth_file": script_dir / 'weights' / 'image-model-v2025.pth',
+        "output_type": ".jpg"
     }
     # Merge default settings into configuration file
     # (If a key exists in both dictionaries, the value from the second dictionary,

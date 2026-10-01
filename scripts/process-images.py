@@ -560,11 +560,11 @@ CONFIG_DEFAULTS = {
     "normalization": "none",
     "output_type": ".jpg",
     "pad": 0.05,
-    "points_per_side": 8,
-    "sam_model_type": "vit_h",
+    "points_per_side": 16,
+    "sam_model_type": "vit_b",
     "sam_weights_path": "",
     "segment": "binary",
-    "stability_score_thresh": 0.88,
+    "stability_score_thresh": 0.93,
 }
 # Merge default settings into configuration file
 # (If a key exists in both dictionaries, the value from the second dictionary,
