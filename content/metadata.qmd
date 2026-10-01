@@ -6,7 +6,7 @@ metadata-files:
 order: 4
 ---
 
-This model integrates descriptive metadata for each fish with scale images to predict age. The current version of the model uses fish length, weight, and the month the fish was caught. These variables were found, through trial and error, to be the most helpful attributes for improving age predictions. The model requires this information be stored in a single CSV file with one entry per sample to be processed. This CSV file can be called anything, but for this discussion, we will call it `metadata.csv` for convenience.
+The multimodal ageing model integrates descriptive metadata for each fish with scale images to predict age. The current version of the model uses fish length, weight, and the month the fish was caught. These variables were found, through trial and error, to be the most helpful attributes for improving age predictions. The model requires this information be stored in a single CSV file with one entry per sample to be processed. This CSV file can be called anything, but for this discussion, we will call it `metadata.csv` for convenience.
 
 Consider three images of scales named `25123.jpg`, `25234.jpg`, and `25345.jpg`, stored in a single directory, for which ages are desired. The accompanying `metadata.csv` file would look like this:
 
@@ -20,8 +20,9 @@ Consider three images of scales named `25123.jpg`, `25234.jpg`, and `25345.jpg`,
 
 : `metadata.csv`
 
-Note that the column headers can be anything, but the model expects these variables *in this order*. Also notice that each image file has an entry and each entry is on its own line. If an image lacks a metadata entry, or if a metadata entry exists but an image does not, the model will fail to run. Finally, the image file names in the first column do not need to include the file extension. If the extensions are missing, they will automatically be added using the `output_type` extension provided in `configurations.yml`.
+Some things to note:
 
-::: {.callout-important title="Remember!"}
-The column headers in `metadata.csv` can be called anything, **but the variables must be provided in the order shown**: image name, length, weight, month of catch.
-:::
+1. The column headers can be anything, but the user [must specify](configuration.qmd#options) in the `configuation.yml` file which column corresponds to which variable. The column names passed to `collection_date_colname`, `fish_id_colname`, `fish_length_colname`, and `fish_weight_colname` are all case-sensitive and should be enclosed in quotation marks if the column name contains spaces or special characters.
+2. The metadata file can include other columns as well, but only those identified as `collection_date_colname`, `fish_id_colname`, `fish_length_colname`, and `fish_weight_colname` will be used. Thus, there is no need to filter out unused columns when downloading from a database.
+3. Notice that each image file has an entry and each entry is on its own line. If an image lacks a metadata entry, or if a metadata entry exists but an image does not, the model will fail to run. This is by design.
+4. Finally, the image file names in the first column do not need to include the file extension. If the extensions are missing, they will automatically be added using the `output_type` extension provided in `configurations.yml`.

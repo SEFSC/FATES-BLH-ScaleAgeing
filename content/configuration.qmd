@@ -6,16 +6,15 @@ metadata-files:
 order: 3
 ---
 
-A `configurations.yml` file is an easy way to control model performance. The most important settings in this file to pay attention to are:
+A `configurations.yml` file is an easy way to control model performance. A single configuration file is used for both image processing (cropping and padding) and running the age models. The most important settings in this file to pay attention to are:
 
 1. The directory containing the scale images to process
 2. The directory containing the accompanying metadata
 3. The directory where you want the model output file to be written
-4. The directory containing the trained model weights (*i.e.*, the `multimodal-model-v2025.pth` file) and, if desired, the Segment Anything Model weights. If you simply cloned the repo and have not moved anything around, the trained model weights file will be alongside the model script in the `scripts` subdirectory in the cloned repository. The SAM weights will be wherever you saved them upon [downloading them](setup.qmd#clone-the-repository).
 
 Absolute file paths are generally recommended to avoid unintended behavior but will vary from computer to computer.
 
-This YAML file is structured as `key: value` pairs. The order in which these entries are presented in the file does not matter, but [all keys need to be included and match exactly](index.qmd#options) as expected. For example:
+This YAML file is structured as `key: value` pairs. The order in which these entries are presented in the file does not matter. For example:
 
 ```{.yaml filename="configurations.yml"}
 # --------------------------------------------------------------------------------------------
@@ -52,28 +51,45 @@ invert: False
 # --------------------------------------------------------------------------------------------
 
 # -----Model paths-----
-metadata_csv_file: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Metadata/metadata.csv'
 output_csv_file: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Model_Predictions/predictions.csv'
 model_pth_file: 'C:/Users/user.name/Documents/FATES-BLH-ScaleAgeing/scripts/weights/multimodal-model-v2025.pth'
+
+# -----Metadata (for multimodal model)-----
+metadata_csv_file: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Metadata/metadata.csv'
+
+fish_id_colname: 'Scaleno'
+fish_length_colname: 'Fork Length Mm'
+fish_weight_colname: 'Weight G'
+collection_date_colname: 'Month'
 ```
 
 ::: {.callout-tip title="A note on reproducibility"}
-For the sake of documenting workflows and facilitating future reproducibility, consider creating new configuration files for each model run (for example, one for each data set to be processed). There is no restriction on what this file can be called; you will tell the model which file to use when you [execute the script](usage.qmd#running-the-model). Thus, some convention like `configuration-2024-atl.yml` might be sensible.
+For the sake of documenting workflows and facilitating future reproducibility, consider creating new configuration files for each model run (for example, one for each data set to be processed). There is no restriction on what this file can be called; you will select the file to use when you [execute the script](usage.qmd#running-the-model). Thus, some naming convention like `configuration-2024-atl.yml` might be sensible.
 :::
 
 ## Options
 
-All user options are contained in a config YAML file (called `configurations.yml` by default, but can be named anything) to allow easier control and greater reproducibility. Settings are entered as `key: value` pairs as described below. The first set of parameters control the image processing routine while the second set control the age model itself.
+All user options are contained in a config YAML file (called `configurations.yml` by default, but can be named anything) to allow easier control and greater reproducibility. Settings are entered as `key: value` pairs as described below. The first sets of parameters control the image processing routine (cropping and padding) while the last set controls the age models. Most parameters are optional; if omitted, the default values presented below will be used. Required parameters are:
+
+* **Image processing:** `input_type`, `raw_image_path`, `processed_image_path`
+* **Image-only model:** `output_csv_file`, `processed_image_path`
+* **Multimodal model:** `collection_date_colname`, `fish_id_colname`, `fish_length_colname`, `fish_weight_colname`, `metadata_csv_file`, `output_csv_file`, `processed_image_path`
+
+Note that specifying `model_pth_file` is not strictly required for running age models, but is strongly recommended for the sake of record keeping and reproducibility.
 
 ### Image Processing Options
 
 | Key                       | Description                                     |
 |---------------------------|-------------------------------------------------|
-| `raw_image_path`          | Path to raw images. Best to include the full path in single quotations. Example: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Raw_Images' |
-| `processed_image_path` | Path to save the processed images. Best to include the full path in single quotations and to use a dedicated folder. |
-| `input_type`              | Input image type |
-| `output_type`             | Output image type. Should not need to be changed. |
-| `segment`                 | Scale segmentation method: "binary" for binary thresholding and "sam" for Segment Anything Model (SAM). Binary thresholding should work fine if images are high contrast with light scales on a dark background. SAM is more robust to variable image conditions but requires more processing time and a GPU. |
+| `bottom_pad`              | Padding for bottom of cropped image. Bottom padding is defined separately since the bottom of scale images is usually visually distinct from the body and may be missed in the segmentation. Top, left, and right padding is controlled by `pad`. Default: 0.35 |
+| `input_type`              | Input image type. Required for image processing. Default: ".tif" |
+| `invert`                  | Option to invert the pixel values in gray scale before normalization. This will make dark regions light and light regions dark. Default: False|
+| `normalization`           | Method for optionally normalizing the image after cropping and padding. Options: "none", for no normalization, "he" for histogram equalization, and "clahe" for Contrast Limited Adaptive Histogram Equalization. Default: "none" |
+| `output_type`             | Output image type. Defaults to ".jpg" and should not need to be changed. |
+| `pad`                     | Padding for top, left, and right sides of cropped image. Defined as a fraction of the original cropped image size. Bottom padding is controlled by `bottom_pad`. Default: 0.05 |
+| `processed_image_path` | Path to save the processed images. Best to include the full path in single quotations and to use a dedicated folder. Required. |
+| `raw_image_path`          | Path to raw images. Best to include the full path in single quotations. Example: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Raw_Images' Required for image processing. |
+| `segment`                 | Scale segmentation method: "binary" for binary thresholding and "sam" for Segment Anything Model (SAM). Binary thresholding should work fine if images are high contrast with light scales on a dark background. SAM is more robust to variable image conditions but requires more processing time and a GPU. Default: "binary" |
 :Paths and general options {tbl-colwidths="[25,75]"}
 
 <br>
@@ -87,28 +103,13 @@ All user options are contained in a config YAML file (called `configurations.yml
 
 |                           |                                                 |
 |---------------------------|-------------------------------------------------|
-| `points_per_side`         | Number of points to use for automatic segmentation of scales with SAM. This should be adjusted based on size of object of interest with respect to the entire image. In general, you want number of points to be greater than the ratio of image size/object size for the smallest object of interest. Having too many points though could greatly increase processing time. Default: 16 |
-| `stability_score_thresh` | Threshold for whether to include pixels in object mask. If the mask is too large, increase the score threshold and vice versa if the mask is too small. Default: 0.93 |
 | `downsample`             | Down-sample image size for input to SAM to reduce processing time. Default: 0.5 (*i.e.* reduce image dimensions to 50% of original size) |
+| `points_per_side`         | Number of points to use for automatic segmentation of scales with SAM. This should be adjusted based on size of object of interest with respect to the entire image. In general, you want number of points to be greater than the ratio of image size/object size for the smallest object of interest. Having too many points though could greatly increase processing time. Default: 8 |
 | `sam_model_type`         | SAM model type. Options are "vit_b", "vit_l", and "vit_h" in order of increasing size. Default: "vit_b" |
-| `sam_weights_path`       | Path to SAM model weights. Make sure this matches the model type. Best to use the full path in quotations. |
+| `sam_weights_path`       | Path to SAM model weights. Make sure this matches the model type. Best to use the full path in quotations. Required when `segmment` is set to "sam". |
+| `stability_score_thresh` | Threshold for whether to include pixels in object mask. If the mask is too large, increase the score threshold and vice versa if the mask is too small. Default: 0.93 |
 :Segment Anything Model (SAM) parameters {tbl-colwidths="[25,75]"}
 
-<br>
-
-|                           |                                                 |
-|---------------------------|-------------------------------------------------|
-| `pad`                     | Padding for top and sides of cropped image. Defined as a fraction of the original cropped image size. Bottom padding is controlled by `bottom_pad`. Default: 0.05 |
-| `bottom_pad`              | Padding for bottom of cropped image. This is defined separately since for scale images, the bottom is usually visually distinct from the body and may be missed in the segmentation. Default: 0.35 |
-:Cropping and padding parameters {tbl-colwidths="[25,75]"}
-
-<br>
-
-|                           |                                                 |
-|---------------------------|-------------------------------------------------|
-| `normalization`           | Method for optionally normalizing the image after cropping and padding. Options: "none", for no normalization, "he" for histogram equalization, and "clahe" for Contrast Limited Adaptive Histogram Equalization. |
-| `invert`                  | Option to invert the pixel values in gray scale before normalization. This will make dark regions light and light regions dark. |
-:Image normalization options {tbl-colwidths="[25,75]"}
 
 ### Age Model Options
 
@@ -116,9 +117,13 @@ The following options control the age inference model. They are entered into the
 
 | Key                       | Description                                     |
 |---------------------------|-------------------------------------------------|
-| `metadata_csv_file`       | Path and file name of a single CSV file containing the metadata for all images in `processed_image_path`. Best to include the full path in single quotations. |
-| `model_pth_file`          | Path to model weights (directory and file name of `pth` weights file). Best to include the full path in single quotations. |
-| `output_csv_file`         | Directory and file name in which to save results. Output file must be a `csv` file. Best to include the full path in single quotations. |
+| `collection_date_colname` | Data table column name in `metadata_csv_file` containing the sample collection date. Required for multimodal model only and ignored otherwise. |
+| `fish_id_colname`         | Data table column name in `metadata_csv_file` containing the sample identification number. Required for multimodal model only and ignored otherwise. |
+| `fish_length_colname`     | Data table column name in `metadata_csv_file` containing the sample length. Required for multimodal model only and ignored otherwise. | 
+| `fish_weight_colname`     | Data table column name in `metadata_csv_file` containing the sample weight. Required for multimodal model only and ignored otherwise. |
+| `metadata_csv_file`       | Path and file name of a single CSV file containing the metadata for all images in `processed_image_path`. Best to include the full path in single quotations. Required for multimodal model only and ignored otherwise. |
+| `model_pth_file`          | Path to model weights (directory and file name of `pth` weights file). Best to include the full path in single quotations. **This parameter is not strictly required, but including it is strongly recommended for the sake of record keeping and reproducibility.** Defaults to `PROJECT_DIR/scripts/weights/image-model-v2025.pth` as the image-only model and `PROJECT_DIR/scripts/weights/multimodal-model-v2025.pth` as the multimodal model, where `PROJECT_DIR` is the parent level project directory [retrieved from GitHub](setup.qmd#clone-the-repository). |
+| `output_csv_file`         | Directory and file name in which to save results. Output file must be a `csv` file. Best to include the full path in single quotations. Required for all ageing models. |
 :Configuration for age inference model {tbl-colwidths="[27,75]"}
 
 ::: {.callout-note title="The most important settings in this file to pay attention to are:"}
@@ -126,7 +131,6 @@ The following options control the age inference model. They are entered into the
 1. The directory containing the scale images to process
 2. The directory containing the accompanying metadata
 3. The directory in which to write the model output
-4. The directory containing the trained model weights (*i.e.*, the `multimodal-model-v2025.pth` file) and, if desired, the Segment Anything Model weights. If you simply cloned the repo and have not moved anything around, the trained model weights file will be alongside the model script in the `scripts` subdirectory in the cloned repository. The SAM weights will be wherever you saved them upon [downloading them](/content/setup.qmd#clone-the-repository).
 :::
 
 ::: {.callout-note title="Absolute vs. relative file paths"}

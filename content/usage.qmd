@@ -20,35 +20,31 @@ Upon launching `menhaden-age-model`, the user is asked to select a process from 
 
 Regardless of which pipeline is selected, the user will then be prompted to select the desired configuration `YAML` file. See the [docs](configuration.qmd) for more information.
 
+Launching the `menhaden-age-model` utility will automatically open a Windows Command Prompt window. This will show status and progress updates, as well as any errors that might occur. It is important to not close this window until prompted, as doing so will terminate the job. After the utility has finished running, it will prompt the use to press any key to close the window.
+
+::: {.callout-tip}
+A set of images should take a several minutes to process or age. If you run the utility to either process or age images and the "Press any key to close this window..." prompt is displayed sooner than expected, something most likely went wrong. This prompt simply means the utility has stopped running and it is safe to close the window; it **does not** mean it completed successfully.
+:::
+
 ## Advanced Users
 
 ### Activate the Virtual Environment
 
-Navigate (`cd`) into the directory containing the `predict-ages-multimodal.py` script. If you simply cloned the repo and have not moved anything around, this will in the `/scripts` subdirectory in the cloned repository. For example:
+Once the `.venv` virtual environment is created, it can be activated via command line like any other pip environment. Navigate (`cd`) into the directory containing the `predict-ages-multimodal.py` script. If you simply cloned the repo and have not moved anything around, this will in the `/scripts` subdirectory in the cloned repository. For example:
 
 ```bash
 cd "c:/Users/user.name/Documents/ageing/{{< meta repo.name >}}/scripts"
 ```
 
-Activate the virtual environment we [previously configured](setup.qmd#create-a-virtual-environment). In a terminal window, type:
+Activate the virtual environment we [previously configured](setup.qmd#create-a-virtual-environment):
 
 ```{.bash filename="pip environment"}
-.scaleageing\Scripts\activate
+source .venv/Scripts/activate
 ```
-
-or 
-
-```{.bash filename="conda environment"}
-conda activate scaleageing
-```
-
-:::{.callout-tip}
-If you named your virtual environment something other than "scaleageing", invoke that name instead.
-:::
 
 ### Process Images
 
-All Python scripts are stored in the `/scripts` subdirectory in the repo. To process raw scale images:
+The Windows `.bat` file is merely a wrapper around several Python scripts, all of which are stored in the `/scripts` subdirectory in the repo. Any of these scripts can be invoked via command line as well. To process raw scale images:
 
 ```bash
 python scripts/process-images.py --config_path <config_dir>
@@ -75,7 +71,7 @@ python scripts/predict-ages-images.py --config_path <config_dir>
 python scripts/predict-ages-multimodal.py --config_path <config_dir>
 ```
 
-where `<config_dir>` is the path to the [configuration file containing model settings](configuration.qmd).
+where `<config_dir>` is the path to the same [configuration file containing model settings](configuration.qmd) as in the image processing step above.
 
 #### Examples
 
@@ -96,8 +92,8 @@ python scripts/predict-ages-multimodal.py --config_path configuration-2024-atl.y
 Alternatively, your `configurations.yml` file is [stored alongside your data](configuration.qmd#option-2-alongside-the-data), you will need to tell the script exactly where that file is located using its full directory path. Be sure to also include the correct file name, if applicable. For example:
 
 ```bash
-python scripts/process-images.py --config_path "c:/Users/user.name/Documents/data/2024/configurations.yml"
-python scripts/predict-ages-multimodal.py --config_path "c:/Users/user.name/Documents/data/2024/configurations.yml"
+python scripts/process-images.py --config_path "c:/Users/user.name/Documents/data/2024/configs.yml"
+python scripts/predict-ages-multimodal.py --config_path "c:/Users/user.name/Documents/data/2024/configs.yml"
 ```
 
 ::: {.callout-tip}
@@ -110,10 +106,4 @@ When you are finished running the model, deactivate the virtual environment to f
 
 ```{.bash filename="pip environment"}
 deactivate
-```
-
-or
-
-```{.bash filename="conda environment"}
-conda deactivate
 ```

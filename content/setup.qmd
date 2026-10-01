@@ -24,11 +24,9 @@ To use the Segment Anything Model (SAM) for image processing, [download this mod
 
 Much of the following is carried out using command line. In the instructions below, "command line terminal" or "terminal" refer to any command line application for the given operating system. For Windows, this is commonly Command Prompt or Windows Powershell. These use DOS commands. For UNIX users, Git Bash is a good alternative; it is included in [Git for Windows](#git) and allows UNIX commands to be used instead of DOS.
 
-### Software Installation
+#### Git Installation
 
-#### git
-
-If the [Git CLI](https://git-scm.com/downloads) is already installed, there should be a Git Bash program in your Applications. If so, open this program and verify everything is working by typing
+Download and install [git](https://git-scm.com/downloads). This does not need administrative privileges to install at the user level. Open the newly-installed Git Bash application and verify everything is working by typing
 
 ```bash
 git --version
@@ -40,39 +38,11 @@ This should display the version of git installed on the system.
 This should already be installed for all users on the Advanced Technology GPU machine.
 :::
 
-If needed, download and install the [Git CLI](https://git-scm.com/downloads) before continuing. This does not need administrative privileges to install at the user level. Confirm that it has been installed by opening a command line terminal and entering `git --version`.
-
-#### conda
-
-*This is optional for users who prefer Anaconda over pip.*
-
-Download and install [Anaconda](https://www.anaconda.com/).
-
-:::{.callout-note}
-This is already installed on the Advanced Technology GPU machine, but it may need to be set up for each user. Keep reading to learn more.
-:::
-
-Verify installation and configuration of Anaconda using a command line terminal:
-
-```bash
-conda --version
-```
-
-If Anaconda is configured properly, this should print the version of the installed software. If, instead, it returns a "command not found" error, and you know Anaconda has been installed, you most likely need to [add Conda to your path variables](https://stackoverflow.com/questions/44597662/conda-command-is-not-recognized-on-windows-10) so that your operating system knows where to find it. First, find where it was installed, and then, in Windows:
-
-1. In the Windows taskbar, search for "environment" and select "Edit environmental variables for your account"
-2. In the top panel of the window that opens, click the "Path" user variable, then select "Edit...".
-3. You need to add two new paths, one at a time. Click "New" and enter the full path (starting with "C:\") of the directory containing Anaconda. This may, for example, be `C:\Users\user.name\AppData\Local\anaconda3`, if installed at the user level (where `user.name` is your user name), or `C:\ProgramData\anaconda3` if installed for all users.
-4. Repeat step 3 with the same path but with `\Scripts\` appended to the end. For example, `C:\ProgramData\anaconda3\Scripts\`.
-5. Click Ok (twice) to save and exit Settings.
-
-Close and reopen your command line terminal. Then type `conda init` to initialize Anaconda. You may need to close and reopen your command line terminal again (it will prompt you if needed.) Finally, try the `conda --version` command again. It should work now.
-
-### Clone the Repository
+#### Clone the Repository
 
 The model code and most of its dependencies are [available on GitHub]({{< meta website.repo-url >}}). To retrieve it, clone the `{{< meta repo.prod-branch >}}` branch of this repo, which is currently functioning as the production version of the model:
 
-1. Open a terminal window and change directories (`cd`) to wherever you want the code to reside. For example,
+1. Open Git Bash and change directories (`cd`) to wherever you want the code to reside. For example,
 
    ```bash
    cd Documents/ageing
@@ -104,50 +74,17 @@ This model has the option of using a [Segment Anything Model](https://arxiv.org/
 You only need to download this if you intend to use Segment Anything Model method to image preprocessing. See [Using the Model](usage.qmd#configuration-file) for more information. 
 :::
 
-### Create a Virtual Environment
+### Virtual Environment
 
-Virtual environments are used to manage Python packages. Options exist for either pip or conda environments. Choose one.
+A Python virtual environment will automatically be created and configured the first time you [launch the model or process images](usage.qmd). The utility will automatically:
 
-### Option 1: pip
+1. Check the system for a compatible Python installation. If none is found, the user will be prompted to [install the appropriate version](#getting-started) and directed to the official Python distribution site.
+2. Look for a project-specific Python virtual environment (called `.venv`) in the project parent folder. If one is found, it will be activated. Otherwise, one will be created and activated and the required Python packages will be installed in it from the provided `requirements.txt` file. This may take several minutes to complete but only needs to happen once.
 
-Create and activate a new pip virtual environment and install package dependencies using the `requirements.txt` file packaged with the repo:
+::: {.callout-tip title=Windows path limits}
 
-```bash
-python -m venv .scaleageing
+If package installation fails, it may be due to [Windows path length limitations](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry). The most common culprit of this is PyTorch, which contains thousands of files within nested directories. Try relocating the downloaded or cloned project folder to a higher level directory on your machine. For example, if your project is currently in `C:\Users\user.name\Documents\models\menhaden\ageing\FATES-BLH-ScaleAgeing`, a path that itself contains more than 70 characters out of the allotted 250, consider moving it -- and renaming the project directory to, for example, `C:\Users\user.name\Documents\ageing`. Alternatively, the 250-character limit can be disabled with a Windows registry setting, but this will require administrator privileges.
 
-.scaleageing\Scripts\activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-#### Option 2: conda
-
-Create a virtual environment specifically for this model. In a terminal window, navigate (`cd`) into the directory containing the `environment.yml` file. This should be the parent directory of the cloned repository. For example,
-
-```bash
-cd "c:/Users/user.name/Documents/ageing/{{< meta repo.name >}}"
-```
-
-where `user.name` is your computer user name.
-
-Then:
-
-```bash
-conda env create --name scaleageing --file="environment.yml"
-```
-
-This command creates a virtual environment called `scaleageing` and downloads and installs all of the package dependencies listed in the `environment.yml` file contained in the repo.
-
-Note that this virtual environment can be named anything at all, but remember what you call it -- and keep it simple -- because it will be invoked by name each time you use the model.
-
-::: {.callout-tip title="Deleting a virtual environment"}
-In the unlikely event you need to delete this virtual environment, such as to troubleshoot or to restart from a clean slate, use the following:
-
-```bash
-conda remove --name ENV_NAME --all
-```
-
-where `ENV_NAME` is the name of the virtual environment to be deleted (*e.g.*, `scaleageing`.)
 :::
 
-**Congratulations! Now that your environment is set up -- and this only needs to be done once, the first time -- we are ready to start [using the model](usage.qmd).**
+If an installation fails or you want to reinstall something, the easiest way to do so is to delete the `.venv` directory and relaunch the model. 
