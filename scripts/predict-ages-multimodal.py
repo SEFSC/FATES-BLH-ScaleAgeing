@@ -16,9 +16,9 @@ Authors: aotian.zheng@noaa.gov (model development, training, validation, testing
          and matt.grossi@noaa.gov (model testing, implementation, code
          refactoring for user functionality, documentation) with assistance
          from Google Gemini Coding Partner
-Version: 2026.1.0
+Version: 2026.1.2
 Release Date: September 2025
-Last Updated: July 2026
+Last Updated: September 2026
 """
 
 import argparse
@@ -26,8 +26,6 @@ import difflib
 import os
 from pathlib import Path
 from PIL import Image
-import warnings
-import yaml
 
 import numpy as np
 import pandas as pd
@@ -39,7 +37,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from typing import Any, Callable, List, Optional, Type, Union, Tuple
+from typing import Any, Callable, List, Optional, Type, Union
+import yaml
 
 def load_yaml(file_path: str | Path) -> dict:
     """Load a YAML configuration file with fallback support for raw Windows
@@ -81,13 +80,30 @@ def clean_and_validate_config(config: dict):
     # Define expected keys
     REQUIRED_KEYS = {
         'collection_date_colname', 'fish_id_colname', 'fish_length_colname',
-        'fish_weight_colname', 'metadata_csv_file', 'model_pth_file',
-        'output_csv_file', 'processed_image_path'
+        'fish_weight_colname', 'metadata_csv_file', 'output_csv_file', 'processed_image_path'
         }
-    VALID_KEYS = REQUIRED_KEYS | {
-        'binary_threshold', 'bottom_pad', 'downsample', 'input_type', 'invert',
-        'normalization', 'output_type', 'pad', 'points_per_side',
-        'raw_image_path', 'sam_weights_path', 'sam_model_type', 'segment',
+    VALID_KEYS = {
+        'binary_threshold',
+        'bottom_pad',
+        'collection_date_colname',
+        'downsample',
+        'fish_id_colname',
+        'fish_length_colname',
+        'fish_weight_colname',
+        'input_type',
+        'invert',
+        'metadata_csv_file',
+        'model_pth_file',
+        'normalization',
+        'output_csv_file',
+        'output_type',
+        'pad',
+        'points_per_side',
+        'processed_image_path',
+        'raw_image_path',
+        'sam_model_type',
+        'sam_weights_path',
+        'segment',
         'stability_score_thresh'
         }
     
@@ -129,17 +145,29 @@ def clean_and_validate_config(config: dict):
             v = v.replace(ext.upper(), ext.lower())
 
     # Format directories for cross-platform compatibility
-    config.update(
-        {k: Path(i) for k,i in config.items() if 'path' in k or 'file' in k}
-        )
-    
+    for k, v in config.items():
+        if 'path' in k or 'file' in k:
+            if isinstance(v, str):
+                # Strip accidental literal quotes/spaces and convert backslashes to forward slashes
+                clean_path = v.strip(" \t\"'").replace('\\', '/')
+                config[k] = Path(clean_path).expanduser()
+            else:
+                # Fallback if the path is already a Path object or unexpected type
+                config[k] = Path(v)
+                    
+    # Check and fix image type file extensions, if necessary
+    if 'input_type' in config and not config['input_type'].startswith('.'):
+        config['input_type'] = '.' + config['input_type']
+    if 'output_type' in config and not config['output_type'].startswith('.'):
+        config['output_type'] = '.' + config['output_type']
+
     # Check for file names included in config paths where needed
-    if config["metadata_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["output_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["model_pth_file"].suffix.lower() != ".pth":
+    if "model_pth_file" in config and config["model_pth_file"].suffix.lower() != ".pth":
         raise ValueError("The 'model_pth_file' key in the configuration file must include a file name ending with '.pth'.")
+    if "output_csv_file" in config and config["output_csv_file"].suffix.lower() != ".csv":
+        raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
+    if  "metadata_csv_file" in config and config["metadata_csv_file"].suffix.lower() != ".csv":
+        raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
 
 # Function to create a 3x3 convolutional layer
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
@@ -792,16 +820,20 @@ class FishTestDataset(Dataset):
 
     def __getitem__(self, index):
         """Returns the image, metadata, and label at the specified index."""
-        # Open the specified image
-        img_path = os.path.join(self.image_dir, str(self.image_name[index]))
-        image = Image.open(img_path)
+        img_path = self.image_dir / str(self.image_name[index])
         
+        try:
+            # Open and transform the specified image
+            image = Image.open(img_path)
+            if self.transforms:
+                image = self.transforms(image)
+        except Exception as e:
+            # Print the exact file causing the crash before raising the error
+            print(f"\n[!] CRASHED WHILE READING IMAGE: {img_path}")
+            raise e
+
         # Normalize metadata
         metadata = torch.tensor([(self.wt[index] - 163)/(82), (self.length[index] - 211)/ (35.5), (self.month[index]-7.4)/(1.9)]).type(torch.FloatTensor)
-        
-        # Transform the image, if transforms are provided
-        if self.transforms:
-            image = self.transforms(image)
 
         return (image, metadata), self.image_name[index]
 
@@ -812,12 +844,25 @@ def main():
     parser.add_argument("-c", "--config_path", help="Path to configuration yaml file", required=True)
     args = parser.parse_args()
 
+    # PWD absolute path
+    script_dir = Path(__file__).resolve().parent
+
     # Open the configuration file and read in the parameters
     try:
         config = load_yaml(file_path=args.config_path)
     except FileNotFoundError:
         print(f"Error: The configuration file was not found at {args.config_path}")
         return
+
+    # Set defaults for settings that can also be set in the YAML configuration file
+    CONFIG_DEFAULTS = {
+        "model_pth_file": script_dir / 'weights' / 'multimodal-model-v2025.pth',
+        "output_type": ".jpg"
+    }
+    # Merge default settings into configuration file
+    # (If a key exists in both dictionaries, the value from the second dictionary,
+    # `config`, replaces the value from the first dictionary, the default value.)
+    config = CONFIG_DEFAULTS | config
 
     # Image transformations: resizing, cropping, normalization
     data_transforms = transforms.Compose(
@@ -868,32 +913,28 @@ def main():
     model.to(device)
 
     # Create output file and write header
-    try:
-        with open(config["output_csv_file"], 'w') as file:
-            file.write("Image Name, Predicted Age\n")
+    with open(config["output_csv_file"], 'w') as file:
+        file.write("Image Name, Predicted Age\n")
 
-            # Loop through the dataset and make predictions
-            for (images, meta), img_path in tqdm(test_loader, desc="Predicting ages"):
-                images = images.to(device)
-                meta = meta.to(device)
+        # Loop through the dataset and make predictions
+        for (images, meta), img_path in tqdm(test_loader, desc="Predicting ages"):
+            images = images.to(device)
+            meta = meta.to(device)
 
-                with torch.no_grad():
-                    outputs = model(images, meta)
-                
-                _, preds = torch.max(outputs, 1)
-                preds = preds.cpu().detach().numpy()
-                
-                # Write predictions to the output file
-                for i in range(preds.shape[0]):
-                    age = str(preds[i])
-                    # Change the maximum age class to "4+"
-                    if preds[i] == 4:
-                        age = "4+"
-                    file.write(f"{img_path[i]},{age}\n")
-        print(f'Inference complete. Results saved to {config["output_csv_file"]}')
-
-    except Exception as e:
-        print(f"An error occurred during inference: {e}")
+            with torch.no_grad():
+                outputs = model(images, meta)
+            
+            _, preds = torch.max(outputs, 1)
+            preds = preds.cpu().detach().numpy()
+            
+            # Write predictions to the output file
+            for i in range(preds.shape[0]):
+                age = str(preds[i])
+                # Change the maximum age class to "4+"
+                if preds[i] == 4:
+                    age = "4+"
+                file.write(f"{img_path[i]},{age}\n")
+    print(f'Inference complete. Results saved to {config["output_csv_file"]}')
 
 if __name__ == '__main__':
     main()

@@ -16,23 +16,22 @@ Usage:
 Authors: aotian.zheng@noaa.gov (script development) and matt.grossi@noaa.gov
          (implementation, user functionality, documentation) with assistance
          from Google Gemini Coding Partner
-Version: 2026.1.0
+Version: 2026.1.2
 Release Date: July 2025
-Last Updated: July 2026
+Last Updated: September 2026
 """
 
 import argparse
 import difflib
 import os
 from pathlib import Path
-import warnings
-import yaml
 
 import cv2 as cv
 import numpy as np
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 import torch
 from tqdm import tqdm
+import yaml
 
 def load_yaml(file_path: str | Path) -> dict:
     """Load a YAML configuration file with fallback support for raw Windows
@@ -75,12 +74,28 @@ def clean_and_validate_config(config: dict):
     REQUIRED_KEYS = {
         'processed_image_path', 'raw_image_path', 'input_type'
         }
-    VALID_KEYS = REQUIRED_KEYS | {
-        'binary_threshold', 'bottom_pad', 'collection_date_colname',
-        'downsample', 'fish_id_colname', 'fish_length_colname',
-        'fish_weight_colname', 'invert', 'metadata_csv_file', 'model_pth_file',
-        'normalization', 'output_csv_file', 'output_type', 'pad',
-        'points_per_side', 'sam_weights_path', 'sam_model_type', 'segment',
+    VALID_KEYS = {
+        'binary_threshold',
+        'bottom_pad',
+        'collection_date_colname',
+        'downsample',
+        'fish_id_colname',
+        'fish_length_colname',
+        'fish_weight_colname',
+        'input_type',
+        'invert',
+        'metadata_csv_file',
+        'model_pth_file',
+        'normalization',
+        'output_csv_file',
+        'output_type',
+        'pad',
+        'points_per_side',
+        'processed_image_path',
+        'raw_image_path',
+        'sam_model_type',
+        'sam_weights_path',
+        'segment',
         'stability_score_thresh'
         }
     
@@ -121,24 +136,22 @@ def clean_and_validate_config(config: dict):
             _, ext = os.path.splitext(v)
             v = v.replace(ext.upper(), ext.lower())
 
-    # Check and fix image type file extensions, if necessary
+    # Format directories for cross-platform compatibility
+    for k, v in config.items():
+        if 'path' in k or 'file' in k:
+            if isinstance(v, str):
+                # Strip accidental literal quotes/spaces and convert backslashes to forward slashes
+                clean_path = v.strip(" \t\"'").replace('\\', '/')
+                config[k] = Path(clean_path).expanduser()
+            else:
+                # Fallback if the path is already a Path object or unexpected type
+                config[k] = Path(v)
+     
+      # Check and fix image type file extensions, if necessary
     if 'input_type' in config and not config['input_type'].startswith('.'):
         config['input_type'] = '.' + config['input_type']
     if 'output_type' in config and not config['output_type'].startswith('.'):
         config['output_type'] = '.' + config['output_type']
-
-    # Format directories for cross-platform compatibility
-    config.update(
-        {k: Path(i) for k,i in config.items() if 'path' in k or 'file' in k}
-        )
-    
-    # Check for file names included in config paths where needed
-    if config["metadata_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'metadata_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["output_csv_file"].suffix.lower() != ".csv":
-        raise ValueError("The 'output_csv_file' key in the configuration file must include a file name ending with '.csv'.")
-    if config["model_pth_file"].suffix.lower() != ".pth":
-        raise ValueError("The 'model_pth_file' key in the configuration file must include a file name ending with '.pth'.")
 
     value_errors = []
 
@@ -174,7 +187,7 @@ def clean_and_validate_config(config: dict):
             value_errors.append(
                 "  - 'sam_weights_path' is missing or empty, but is required when 'segment' is set to 'sam'."
             )
-        elif ".pth" not in config["sam_weights_path"]:
+        elif config["sam_weights_path"].suffix.lower() != ".pth":
             value_errors.append("  - The 'sam_weights_path' key in the configuration file must include a file name ending with '.pth'.")
 
     # Verify normalization key
@@ -226,7 +239,6 @@ def combine_masks(annotations):
     for ann in annotations:
         xmin, ymin, w, h = ann['bbox']
         if(w*h < 0.9*img_area):
-            m = ann['segmentation']
             foreground_anns.append(ann)
     # Keep track of which masks should be deleted
     del_indices = [0]
@@ -491,42 +503,42 @@ def preprocess_folder(image_dir, output_dir, seg_opt="binary", extension=".tif",
     """
 
     # Create output directory if it doesn't exist
-    if(not os.path.exists(output_dir)):
-        os.mkdir(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Loop through all images in the image directory
-    for file in tqdm(os.listdir(image_dir), desc="Processing images"):
-        if file.endswith(extension):
-            # Read in the original image
-            image = cv.imread(os.path.join(image_dir, file))
+    # Loop through all images in the image directory that match the extension
+    for file_path in tqdm(list(image_dir.glob(f"*{extension}")), desc="Processing images"):
+        
+        # Read in the original image (cv2 requires a string path)
+        image = cv.imread(str(file_path))
+        
+        # Crop and pad the image, applying segmentation if specified
+        if(seg_opt == "binary"):
+            cropped_image = crop_and_pad_binary_threshold(image=image, kernel_size=kernel_size, threshold=binary_threshold, pad=pad, bottom_pad=bottom_pad)
+        elif(seg_opt == "sam"):
+            cropped_image = crop_and_pad_sam(image=image, down_scale=down_scale, sam_type=sam_type, sam_model_path=sam_model_path, num_points=num_points, threshold=sam_threshold, pad=pad, bottom_pad=bottom_pad)
+        else:
+            cropped_image = image
 
-            # Crop and pad the image, applying segmentation if specified
-            if(seg_opt == "binary"):
-                cropped_image = crop_and_pad_binary_threshold(image=image, kernel_size=kernel_size, threshold=binary_threshold, pad=pad, bottom_pad=bottom_pad)
-            elif(seg_opt == "sam"):
-                cropped_image = crop_and_pad_sam(image=image, down_scale=down_scale, sam_type=sam_type, sam_model_path=sam_model_path, num_points=num_points, threshold=sam_threshold, pad=pad, bottom_pad=bottom_pad)
-            else:
-                cropped_image = image
+        # Apply normalization and color inversion to the cropped image, if specified.
+        # Image is converted to grayscale, cropped if desired, normalized, then converted back to BGR for tensorflow.
+        if(normalization == "he"):
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+            if(invert):
+                cropped_image = 255-cropped_image
+            cropped_image = cv.equalizeHist(cropped_image)
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
+        elif(normalization =="clahe"):
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
+            if(invert):
+                cropped_image = 255-cropped_image
+            clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            cropped_image = clahe.apply(cropped_image)
+            cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
 
-            # Apply normalization and color inversion to the cropped image, if specified.
-            # Image is converted to grayscale, cropped if desired, normalized, then converted back to BGR for tensorflow.
-            if(normalization == "he"):
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-                if(invert):
-                    cropped_image = 255-cropped_image
-                cropped_image = cv.equalizeHist(cropped_image)
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
-            elif(normalization =="clahe"):
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_BGR2GRAY)
-                if(invert):
-                    cropped_image = 255-cropped_image
-                clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-                cropped_image = clahe.apply(cropped_image)
-                cropped_image = cv.cvtColor(cropped_image, cv.COLOR_GRAY2BGR)
-
-            # Write the new cropped image to the output directory
-            cv.imwrite(os.path.join(output_dir, os.path.splitext(file)[0]+out_type), cropped_image)
-
+        # Write the new cropped image to the output directory
+        out_file = output_dir / f"{file_path.stem}{out_type}"
+        cv.imwrite(str(out_file), cropped_image)
+        
 # Parse command line arguments. Currently only requires a path to a configuration yaml file.
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config_path", help="path to configuration yaml file")
@@ -543,16 +555,16 @@ CONFIG_DEFAULTS = {
     "binary_threshold": 100,
     "bottom_pad": 0.35,
     "downsample": 0.5,
-    "normalization": "none",
-    "output_type": ".jpg",
     "input_type": ".tif",
     "invert": False,
+    "normalization": "none",
+    "output_type": ".jpg",
     "pad": 0.05,
-    "points_per_side": 8,
-    "sam_model_type": "vit_h",
+    "points_per_side": 16,
+    "sam_model_type": "vit_b",
     "sam_weights_path": "",
     "segment": "binary",
-    "stability_score_thresh": 0.88,
+    "stability_score_thresh": 0.93,
 }
 # Merge default settings into configuration file
 # (If a key exists in both dictionaries, the value from the second dictionary,
