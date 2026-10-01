@@ -69,7 +69,7 @@ For the sake of documenting workflows and facilitating future reproducibility, c
 
 ## Options
 
-All user options are contained in a config YAML file (called `configurations.yml` by default, but can be named anything) to allow easier control and greater reproducibility. Settings are entered as `key: value` pairs as described below. The first sets of parameters control the image processing routine (cropping and padding) while the last set controls the age models. Most parameters are optional; if omitted, the default values presented below will be used. Required parameters are:
+All user options are controlled using a config YAML file. A template file, called `configurations.yml`, is provided. **Make a copy of this file** rather than modify the the template. Settings are entered as `key: value` pairs as described below. The first sets of parameters control the image processing routine (cropping and padding) while the last set controls the age models. Most parameters are optional; if omitted, the default values presented below will be used. Required parameters are:
 
 * **Image processing:** `input_type`, `raw_image_path`, `processed_image_path`
 * **Image-only model:** `output_csv_file`, `processed_image_path`
@@ -88,7 +88,7 @@ Note that specifying `model_pth_file` is not strictly required for running age m
 | `output_type`             | Output image type. Defaults to ".jpg" and should not need to be changed. |
 | `pad`                     | Padding for top, left, and right sides of cropped image. Defined as a fraction of the original cropped image size. Bottom padding is controlled by `bottom_pad`. Default: 0.05 |
 | `processed_image_path` | Path to save the processed images. Best to include the full path in single quotations and to use a dedicated folder. Required. |
-| `raw_image_path`          | Path to raw images. Best to include the full path in single quotations. Example: 'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Raw_Images' Required for image processing. |
+| `raw_image_path`          | Path to raw images. Best to include the full path in single quotations. Example: `'G:/Shared drives/NMFS SEFSC FATES Advanced Technology/BIOLOGY_LIFE_HISTORY_DATA/2020_Plant_10/Raw_Images'` Required for image processing. |
 | `segment`                 | Scale segmentation method: "binary" for binary thresholding and "sam" for Segment Anything Model (SAM). Binary thresholding should work fine if images are high contrast with light scales on a dark background. SAM is more robust to variable image conditions but requires more processing time and a GPU. Default: "binary" |
 :Paths and general options {tbl-colwidths="[25,75]"}
 
@@ -104,9 +104,9 @@ Note that specifying `model_pth_file` is not strictly required for running age m
 |                           |                                                 |
 |---------------------------|-------------------------------------------------|
 | `downsample`             | Down-sample image size for input to SAM to reduce processing time. Default: 0.5 (*i.e.* reduce image dimensions to 50% of original size) |
-| `points_per_side`         | Number of points to use for automatic segmentation of scales with SAM. This should be adjusted based on size of object of interest with respect to the entire image. In general, you want number of points to be greater than the ratio of image size/object size for the smallest object of interest. Having too many points though could greatly increase processing time. Default: 8 |
+| `points_per_side`         | Number of points to use for automatic segmentation of scales with SAM. This should be adjusted based on size of object of interest with respect to the entire image. In general, you want number of points to be greater than the ratio of image size/object size for the smallest object of interest. Having too many points though could greatly increase processing time. Default: 16 |
 | `sam_model_type`         | SAM model type. Options are "vit_b", "vit_l", and "vit_h" in order of increasing size. Default: "vit_b" |
-| `sam_weights_path`       | Path to SAM model weights. Make sure this matches the model type. Best to use the full path in quotations. Required when `segmment` is set to "sam". |
+| `sam_weights_path`       | Path to SAM model weights. Make sure this matches the model type. Best to use the full path in quotations. Required when `segment` is set to "sam". |
 | `stability_score_thresh` | Threshold for whether to include pixels in object mask. If the mask is too large, increase the score threshold and vice versa if the mask is too small. Default: 0.93 |
 :Segment Anything Model (SAM) parameters {tbl-colwidths="[25,75]"}
 
@@ -122,7 +122,7 @@ The following options control the age inference model. They are entered into the
 | `fish_length_colname`     | Data table column name in `metadata_csv_file` containing the sample length. Required for multimodal model only and ignored otherwise. | 
 | `fish_weight_colname`     | Data table column name in `metadata_csv_file` containing the sample weight. Required for multimodal model only and ignored otherwise. |
 | `metadata_csv_file`       | Path and file name of a single CSV file containing the metadata for all images in `processed_image_path`. Best to include the full path in single quotations. Required for multimodal model only and ignored otherwise. |
-| `model_pth_file`          | Path to model weights (directory and file name of `pth` weights file). Best to include the full path in single quotations. **This parameter is not strictly required, but including it is strongly recommended for the sake of record keeping and reproducibility.** Defaults to `PROJECT_DIR/scripts/weights/image-model-v2025.pth` as the image-only model and `PROJECT_DIR/scripts/weights/multimodal-model-v2025.pth` as the multimodal model, where `PROJECT_DIR` is the parent level project directory [retrieved from GitHub](setup.qmd#clone-the-repository). |
+| `model_pth_file`          | Path to model weights (directory and file name of `pth` weights file). Best to include the full path in single quotations. **This parameter is not strictly required, but including it is strongly recommended for the sake of record keeping and reproducibility.** Defaults to `'PROJECT_DIR/scripts/weights/image-model-v2025.pth'` as the image-only model and `'PROJECT_DIR/scripts/weights/multimodal-model-v2025.pth'` as the multimodal model, where `PROJECT_DIR` is the parent level project directory [retrieved from GitHub](setup.qmd#clone-the-repository). |
 | `output_csv_file`         | Directory and file name in which to save results. Output file must be a `csv` file. Best to include the full path in single quotations. Required for all ageing models. |
 :Configuration for age inference model {tbl-colwidths="[27,75]"}
 
