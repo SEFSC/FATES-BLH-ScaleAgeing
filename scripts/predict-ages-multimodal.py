@@ -37,7 +37,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable
 import yaml
 
 def load_yaml(file_path: str | Path) -> dict:
@@ -241,11 +241,11 @@ class BasicBlock(nn.Module):
         in_planes: int,
         planes: int,
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
+        downsample: nn.Module | None = None,
+        norm_layer: Callable[..., nn.Module] | None = None,
         groups: int = 1,
         base_width: int = 64,
         dilation: int = 1,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         """Basic residual block implementation used in ResNet.
 
@@ -257,7 +257,7 @@ class BasicBlock(nn.Module):
             Number of layer output channels.
         stride : int, optional
             Stride value for the convolutional layers. Default is 1.
-        downsample : Optional[nn.Module], optional
+        downsample : nn.Module, optional
             Downsampling layer to match dimensions. Default is None.
         groups : int, optional
             Number of groups for grouped convolution. Default is 1.
@@ -265,7 +265,7 @@ class BasicBlock(nn.Module):
             Base width for grouped convolution. Default is 64.
         dilation : int, optional
             Dilation rate for dilated convolution. Default is 1.
-        norm_layer : Optional[Callable[..., nn.Module]], optional
+        norm_layer : Callable[..., nn.Module], optional
             Normalization layer to use. Default is None, which uses nn.BatchNorm2d.
         """
         super(BasicBlock, self).__init__()
@@ -273,10 +273,6 @@ class BasicBlock(nn.Module):
         # Use batch normalization if no other normalization layer is provided
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-
-        # BasicBlock only supports groups=1 and base_width=64
-        if groups != 1 or base_width != 64:
-            raise ValueError("BasicBlock only supports groups=1 and base_width=64")
 
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
@@ -448,24 +444,24 @@ class Bottleneck(nn.Module):
 class ResNet(nn.Module):
     def __init__(
             self,
-            block: Type[Union[BasicBlock, Bottleneck]],
-            layers: List[int],
+            block: type[Union[BasicBlock, Bottleneck]],
+            layers: list[int],
             num_classes: int = 5,
             img_size: int = 64,
             metadata_size: int = 32,
             zero_init_residual: bool = False,
             groups: int = 1,
             width_per_group: int = 64,
-            replace_stride_with_dilation: Optional[List[bool]] = None,
+            replace_stride_with_dilation: Optional[list[bool]] = None,
             norm_layer: Optional[Callable[..., nn.Module]] = None,
         ) -> None:
         """ResNet model adapted for multimodal data (images plus metadata).
 
         Attributes
         ----------
-        block : Type[Union[BasicBlock, Bottleneck]]
+        block : type[Union[BasicBlock, Bottleneck]]
             Type of residual block to use (BasicBlock or Bottleneck).
-        layers : List[int]
+        layers : list[int]
             List specifying the number of blocks in each layer.
         num_classes : int, optional
             Number of output classes. Default is 5 (ages 0, 1, 2, 3, 4+).
@@ -479,7 +475,7 @@ class ResNet(nn.Module):
             Number of groups for grouped convolution. Default is 1.
         width_per_group : int, optional
             Base width for the bottleneck layer. Default is 64.
-        replace_stride_with_dilation : Optional[List[bool]], optional
+        replace_stride_with_dilation : Optional[list[bool]], optional
             List indicating whether to replace stride with dilation in each layer. Default is None.
         norm_layer : Optional[Callable[..., nn.Module]], optional
             Normalization layer to use. Default is None, which uses nn.BatchNorm2d.
@@ -556,7 +552,7 @@ class ResNet(nn.Module):
 
     def _make_layer(
         self,
-        block: Type[Union[BasicBlock, Bottleneck]],
+        block: type[Union[BasicBlock, Bottleneck]],
         planes: int,
         blocks: int,
         stride: int = 1,
@@ -566,7 +562,7 @@ class ResNet(nn.Module):
         
         Attributes
         ----------
-        block : Type[Union[BasicBlock, Bottleneck]]
+        block : type[Union[BasicBlock, Bottleneck]]
             Type of residual block to use (BasicBlock or Bottleneck).
         planes : int
             Number of layer output channels.
@@ -603,9 +599,17 @@ class ResNet(nn.Module):
         # Create the specified number of blocks
         layers = []
         # Add the first block of the layer with potential downsampling
+        # Add the first block of the layer with potential downsampling
         layers.append(
             block(
-                self.inplanes, planes, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer
+                self.inplanes, 
+                planes, 
+                stride=stride, 
+                downsample=downsample, 
+                groups=self.groups, 
+                base_width=self.base_width, 
+                dilation=previous_dilation, 
+                norm_layer=norm_layer
             )
         )
         self.inplanes = planes * block.expansion
@@ -683,7 +687,7 @@ class ResNet(nn.Module):
         return self._forward_impl(x, metadata)
 
 # Function to create a new ResNet model
-def resnet_merge(block: Type[Union[BasicBlock, Bottleneck]],
+def resnet_merge(block: type[Union[BasicBlock, Bottleneck]],
                layers: List[int],
                pretrained: bool = False,
                num_classes: int = 5,
@@ -696,7 +700,7 @@ def resnet_merge(block: Type[Union[BasicBlock, Bottleneck]],
 
     Attributes
     ----------
-    block : Type[Union[BasicBlock, Bottleneck]]
+    block : type[Union[BasicBlock, Bottleneck]]
         Type of residual block to use (BasicBlock or Bottleneck).
     layers : List[int]
         List specifying the number of blocks in each layer of the network.
@@ -721,8 +725,8 @@ def resnet_merge(block: Type[Union[BasicBlock, Bottleneck]],
     """
     # Download pretrained weights, if desired
     if pretrained:
-        # Load a pretrained ResNet18 model
-        model = resnet.resnet18(pretrained=True, progress=progress)
+        # Load the most recent pretrained ResNet18 model
+        model = resnet.resnet18(weights='DEFAULT', progress=progress)
         # Update the final fully connected layer for the desired number of classes
         model.fc = nn.Linear(model.fc.in_features, num_classes)
         return model
@@ -777,26 +781,25 @@ class FishTestDataset(Dataset):
         """
         # Read the metadata CSV file, store the image dataset directory, and store the transformation methods 
         date_col = csv_cols['collection_date_colname']
-        data_info = pd.read_csv(csv_path, header=0,
+        self.data_info = pd.read_csv(csv_path, header=0,
             usecols=list(csv_cols.values()),
             encoding="iso-8859-1").dropna(axis=0, how='all')
         try:
             # If it's the current format, this will succeed
-            data_info['Collection Month'] = pd.to_datetime(
-                data_info[date_col], 
+            self.data_info['Collection Month'] = pd.to_datetime(
+                self.data_info[date_col].astype(str), 
                 format='%d-%b-%y'
             ).dt.month
         except ValueError:
             # If it throws a ValueError, it's the legacy CSV format
-            data_info['Collection Month'] = data_info[date_col]
+            self.data_info['Collection Month'] = self.data_info[date_col]
         
-        self.data_info = data_info.astype('int64')
+        self.data_info['Collection Month'] = self.data_info['Collection Month'].astype('int64')
         self.image_dir = image_dir
         self.transforms = transform
 
         # Append the file extension to the image names from the CSV
-        # self.image_name = np.asarray([f"{name}{file_extension}" if file_extension not in str(name) else str(name) for name in self.data_info.loc[:, 'Fish nbr']])
-        self.image_name = np.asarray([f"{str(nbr)}{file_extension}" for nbr in self.data_info.loc[:, csv_cols['fish_id_colname']]])
+        self.image_name = np.asarray([f"{str(nbr)}{file_extension}" for nbr in self.data_info[csv_cols['fish_id_colname']]])
 
         # Check for metadata but missing image
         available_images = [f for f in os.listdir(self.image_dir) if f.endswith(file_extension)]
@@ -810,10 +813,10 @@ class FishTestDataset(Dataset):
             raise AssertionError(f"The following files found in `processed_image_path` are missing metadata and cannot be aged: {missing_metadata}")
 
         # Extract metadata attributes: fish length, weight, month of catch
-        self.length = np.asarray(self.data_info.loc[:, csv_cols['fish_length_colname']])
-        self.wt = np.asarray(self.data_info.loc[:, csv_cols['fish_weight_colname']])
-        self.month = np.asarray(self.data_info.loc[:, 'Collection Month'])
-
+        self.length = np.asarray(self.data_info[csv_cols['fish_length_colname']])
+        self.wt = np.asarray(self.data_info[csv_cols['fish_weight_colname']])
+        self.month = np.asarray(self.data_info['Collection Month'])
+        
     def __len__(self):
         """Returns the number of samples in the dataset."""
         return len(self.image_name)
@@ -904,7 +907,9 @@ def main():
 
     # Load the pre-trained model weights
     try:
-        model.load_state_dict(torch.load(config["model_pth_file"]))
+        model.load_state_dict(torch.load(
+            config["model_pth_file"], weights_only=True)
+            )
         print("Model weights loaded successfully.")
     except Exception as e:
         print(f"Error loading model weights: {e}")

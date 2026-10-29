@@ -1,44 +1,40 @@
 @echo off
 echo Checking system requirements...
 
-:: Search for Python 3.10 or 3.9 specifically
+:: Search for Python 3.14 to match requirements.txt
 set "PYTHON_EXE="
 
 :: Method A: Try the Windows Python Launcher
-py -3.10 --version >nul 2>&1
+py -3.14 --version >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
-    set "PYTHON_EXE=py -3.10"
-    GOTO :VersionOK
-)
-
-py -3.9 --version >nul 2>&1
-IF %ERRORLEVEL% EQU 0 (
-    set "PYTHON_EXE=py -3.9"
+    set "PYTHON_EXE=py -3.14"
     GOTO :VersionOK
 )
 
 :: Method B: Check the standard user-level installation directories
-IF EXIST "%LOCALAPPDATA%\Programs\Python\Python310\python.exe" (
-    set "PYTHON_EXE="%LOCALAPPDATA%\Programs\Python\Python310\python.exe""
+IF EXIST "%LOCALAPPDATA%\Programs\Python\Python314\python.exe" (
+    set "PYTHON_EXE="%LOCALAPPDATA%\Programs\Python\Python314\python.exe""
     GOTO :VersionOK
 )
 
-IF EXIST "%LOCALAPPDATA%\Programs\Python\Python39\python.exe" (
-    set "PYTHON_EXE="%LOCALAPPDATA%\Programs\Python\Python39\python.exe""
+:: Method C: Check the pythoncore-3.14-64 directory 
+IF EXIST "%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe" (
+    set "PYTHON_EXE="%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe""
     GOTO :VersionOK
 )
 
-:: If we reach here, neither 3.10 nor 3.9 was found on the system
+:: If we reach here, 3.14 was not found on the system
 GOTO :InstallPython
 
 :InstallPython
 echo.
 echo ==========================================================
-echo ERROR: Python 3.10 was not found on your system.
+echo ERROR: Python 3.14 was not found on your system.
 echo ==========================================================
-echo This application requires Python 3.9 or 3.10 to run.
+echo This application requires Python 3.14 to run the modern
+echo machine learning dependencies.
 echo.
-echo Please install Python 3.10 using the website that is 
+echo Please install Python 3.14 using the website that is 
 echo about to open.
 echo.
 echo NOTE: If this is the first Python installation on your
@@ -49,7 +45,7 @@ echo ==========================================================
 echo.
 echo Press any key to open the download page and exit...
 pause >nul
-start https://www.python.org/downloads/release/python-31011/
+start https://www.python.org/downloads/
 exit /b
 
 :VersionOK
@@ -65,18 +61,28 @@ IF NOT EXIST ".venv\" (
     :: Use the specifically located Python to create the environment
     %PYTHON_EXE% -m venv .venv
     
+    :: Halt immediately if the virtual environment fails to create
+    if errorlevel 1 (
+        echo.
+        echo ==========================================================
+        echo ERROR: Failed to create the virtual environment!
+        echo ==========================================================
+        pause
+        exit /b
+    )
+    
     echo Activating environment and downloading dependencies...
     echo ^(This may take several minutes. Do not close this window.^)
     call .venv\Scripts\activate.bat
     
-    :: Once activated, 'python' safely refers to the venv's 3.10 installation!
+    :: Once activated, upgrade pip
     python -m pip install --upgrade pip >nul
     
     :: Install from requirements.txt
     pip install -r requirements.txt
     
-    :: ERROR CATCHER: Halt if pip install fails
-    IF %ERRORLEVEL% NEQ 0 (
+    :: ERROR CATCHER: Dynamic check that halts if pip install fails
+    if errorlevel 1 (
         echo.
         echo ==========================================================
         echo ERROR: Failed to download and install dependencies!
@@ -91,7 +97,7 @@ IF NOT EXIST ".venv\" (
         exit /b
     )
 ) ELSE (
-    echo Environment found! Activating...
+    echo Python Environment found! Activating...
     call .venv\Scripts\activate.bat
 )
 
