@@ -18,13 +18,16 @@ Authors: aotian.zheng@noaa.gov (script development) and matt.grossi@noaa.gov
          from Google Gemini Coding Partner
 Version: 2026.1.2
 Release Date: July 2025
-Last Updated: September 2026
+Last Updated: October 2026
 """
 
 import argparse
 import difflib
 import os
 from pathlib import Path
+
+# Suppress OpenCV C++ backend warnings to protect the tqdm progress bar
+os.environ["OPENCV_LOG_LEVEL"] = "ERROR" 
 
 import cv2 as cv
 import numpy as np

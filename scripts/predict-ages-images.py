@@ -270,7 +270,9 @@ def main():
 
     # Load the pre-trained model weights
     try:
-        model.load_state_dict(torch.load(config["model_pth_file"]))
+        model.load_state_dict(
+            torch.load(config["model_pth_file"], weights_only=True)
+            )
         print("Model weights loaded successfully.")
     except Exception as e:
         print(f"Error loading model weights: {e}")
