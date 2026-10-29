@@ -39,7 +39,8 @@ echo about to open.
 echo.
 echo NOTE: If this is the first Python installation on your
 echo workstation, checking the "Add Python to PATH" box during
-echo installation is strongly recommended.
+echo installation is strongly recommended. Otherwise, doing so
+echo is not required; a standard installation is fine.
 echo ==========================================================
 echo.
 echo Press any key to open the download page and exit...
